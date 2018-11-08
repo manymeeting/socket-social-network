@@ -1,0 +1,16 @@
+# User-specific stuff:
+.idea/
+target/
+*.log
+logs/
+
+# IntelliJ
+out/
+*.iml
+# eclipse
+.classpath
+.project
+.settings/
+
+.DS_Store
+*DS_Store
