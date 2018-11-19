@@ -3,52 +3,66 @@ package com.socket.client;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class ClientApp {
 
-    public static void main(String[] args) {
+    private static final String SERVER_NAME = "localhost";
+    private static final int SERVER_PORT = 9091;
 
-        InetAddress ip = null;
-        Scanner scn = null;
-        DataInputStream dis = null;
-        DataOutputStream dos = null;
+    private static Socket clientSocket = null;
+
+    private static Scanner scanner = null;
+    private static DataInputStream dis = null;
+    private static DataOutputStream dos = null;
+
+    private static boolean closed = false;
+
+
+    public static void main(String[] args) {
         try {
-            ip = InetAddress.getByName("localhost");
-            Socket socket = new Socket(ip, 9091);
-            System.out.println("Client started, connecting to server localhost:9091");
+            Socket socket = new Socket(SERVER_NAME, SERVER_PORT);
+            System.out.println(String.format("Client started, connecting to server %s:%d", SERVER_NAME, SERVER_PORT));
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
-            scn = new Scanner(System.in);
-            while (true) {
-                String tosend = scn.nextLine();
-                System.out.println("tosend = " + tosend);
-                dos.writeUTF(tosend);
-                if (tosend.equals("Exit")) {
-                    System.out.println("Closing this connection : " + socket);
-                    socket.close();
-                    System.out.println("Connection closed");
-                    break;
-                }
-                String received = dis.readUTF();
-                System.out.println(received);
-            }
+            scanner = new Scanner(System.in);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (scn != null) scn.close();
+        }
+
+        try {
+            new PullThread().start();
+
+            while (!closed) {
+                dos.writeUTF(scanner.nextLine().trim());
+            }
+            dos.close();
+            dis.close();
+            clientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static class PullThread extends Thread {
+
+        @Override
+        public void run() {
+            String responseLine;
             try {
-                if (dis != null) dis.close();
-                if (dos != null) dos.close();
+                while ((responseLine = dis.readUTF()) != null) {
+                    System.out.println(responseLine);
+                    if ("exit".equals(responseLine))
+                        break;
+                }
+                closed = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
 }
