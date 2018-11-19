@@ -95,7 +95,4 @@ public class ServerApp {
         }
     }
 
-    public void addClientThread(ClientThread clientThread) {
-        clientThreadSet.add(clientThread);
-    }
 }
