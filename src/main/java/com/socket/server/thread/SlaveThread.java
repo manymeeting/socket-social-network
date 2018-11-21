@@ -9,7 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ClientThread extends Thread {
+public class SlaveThread extends Thread {
 
     private final ServerApp server;
     private Socket clientSocket;
@@ -18,7 +18,7 @@ public class ClientThread extends Thread {
     private AppUser user = null;
     public volatile OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
 
-    public ClientThread(ServerApp server, Socket clientSocket) {
+    public SlaveThread(ServerApp server, Socket clientSocket) {
         this.clientSocket = clientSocket;
         this.server = server;
     }
