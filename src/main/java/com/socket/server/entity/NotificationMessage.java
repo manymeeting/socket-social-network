@@ -2,6 +2,7 @@ package com.socket.server.entity;
 
 public class NotificationMessage {
 
+    public static String EMPTY_TOKEN = "";
     private String token;
     private String message;
 

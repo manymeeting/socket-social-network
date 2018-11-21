@@ -6,6 +6,7 @@ import com.socket.server.entity.NotificationMessage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -13,13 +14,15 @@ public class SlaveThread extends Thread {
 
     private final ServerApp server;
     private Socket clientSocket;
+    private Socket notiSocket;
     private DataInputStream dis = null;
     private DataOutputStream dos = null;
     private AppUser user = null;
     public volatile OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
 
-    public SlaveThread(ServerApp server, Socket clientSocket) {
+    public SlaveThread(ServerApp server, Socket clientSocket, Socket notiSocket) {
         this.clientSocket = clientSocket;
+        this.notiSocket = notiSocket;
         this.server = server;
     }
 
@@ -38,12 +41,14 @@ public class SlaveThread extends Thread {
 
             // User successfully login, update thread to be online
             setOnlineStatus(OnlineStatus.ONLINE);
-            sendMessage(user.getToken(), String.format("Welcome %s, you have %d unread messages.", user.getUsername(), user.getUnreadMessages().size()));
+            sendMessage(user.getToken(), String.format("Welcome %s, you have %d unread messages.",
+                    user.getUsername(), user.getUnreadMessages().size()));
             for (String unread : user.getUnreadMessages()) {
                 sendMessage(user.getToken(), "[Unread] " + unread);
             }
 
-            server.broadcast(this, String.format("User %s has been online now.", user.getUsername()));
+            sendMessage(NotificationMessage.EMPTY_TOKEN,
+                    String.format("User %s has been online now.", user.getUsername()));
 
             while (true) {
                 String readbuf = dis.readUTF();
@@ -55,10 +60,13 @@ public class SlaveThread extends Thread {
                     System.out.println("Connection closed");
                     break;
                 }
-                server.broadcast(null, String.format("%s posted: %s", user.getUsername(), readbuf));
+                sendMessage(NotificationMessage.EMPTY_TOKEN,
+                        String.format("%s posted: %s", user.getUsername(), readbuf));
             }
             dis.close();
             dos.close();
+        } catch (EOFException e) {
+            System.out.println(String.format("%s closed", user.getUsername()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,9 +80,9 @@ public class SlaveThread extends Thread {
         this.onlineStatus = onlineStatus;
 
         if (onlineStatus == OnlineStatus.ONLINE) {
-            server.addOnlineThread(user.getToken(), this);
+            server.addOnlineUser(user.getToken(), this, this.notiSocket);
         } else {
-            server.removeOnlineThread(user.getToken());
+            server.removeOnlineUser(user.getToken());
 
             try {
                 dos.writeUTF("exit");
