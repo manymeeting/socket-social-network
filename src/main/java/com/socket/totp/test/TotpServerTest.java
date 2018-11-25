@@ -158,28 +158,4 @@ class TotpServerTest {
         Map<TotpField, String> map = totpServer.push(messages);
         assertEquals("250", map.get(TotpField.STATUS));
     }
-
-    @Test
-    public void regexTest() {
-        String req = "123456789012345678901234567890123456 DATA 1 23\r\nThis is a wall message.\r\n\r\n.\r\n";
-        int tokenLen = 36;
-        Pattern pattern = Pattern.compile("^(\\w{" + tokenLen + "}\\b)\\s([\\s\\S]+)$");
-        Matcher matcher = pattern.matcher(req);
-        assertEquals(true, matcher.find());
-        assertEquals("123456789012345678901234567890123456", matcher.group(1));
-        assertEquals("DATA 1 23\r\nThis is a wall message.\r\n\r\n.\r\n", matcher.group(2));
-        req = matcher.group(2);
-        pattern = Pattern.compile("^(\\w+)(?:\r\n|\\s)?([\\s\\S]+)?\r\n$");
-        matcher = pattern.matcher(req);
-        assertEquals(true, matcher.find());
-        assertEquals("DATA", matcher.group(1));
-        req = matcher.group(2);
-        pattern = Pattern.compile("(\\d+)\\s(\\d+)\r\n([\\s\\S]+)\r\n.$");
-        matcher = pattern.matcher(req);
-        assertEquals(true, matcher.find());
-        req = matcher.group(1);
-        req = matcher.group(2);
-        req = matcher.group(3);
-        assertEquals("1 23\r\nThis is a wall message.\r\n", matcher.group(1));
-    }
 }
