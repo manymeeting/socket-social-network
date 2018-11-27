@@ -18,16 +18,37 @@ public class TotpClient extends TotpProtocol {
     private String token_id;
     Timer timer;
 
+    /**
+     * Creates a TotpProtocol with client functionality
+     * that handles the TOTP based information exchanging
+     * using the specified underlying socket.
+     * @param socket A socket for connecting to the server
+     */
     public TotpClient(Socket socket) {
         this(socket, "");
     }
 
+    /**
+     * Creates a TotpProtocol with client functionality
+     * that handles the TOTP based information exchanging
+     * using the specified underlying socket.
+     * @param socket A socket for connecting to the server
+     * @param token_id The token_id acquired previously from the server if any.
+     */
     public TotpClient(Socket socket, String token_id) {
         super(socket);
         this.token_id = token_id;
         this.timer = new Timer();
     }
 
+    /**
+     * Login to the server with the given user and password.
+     * The token_id acquired from the server will be stored
+     * in this instance.
+     * @param user Username
+     * @param password Password
+     * @return
+     */
     public String login(String user, String password) {
         TotpContent totpContent;
         String req, resp;
@@ -55,6 +76,12 @@ public class TotpClient extends TotpProtocol {
         }
     }
 
+    /**
+     * Send a message to a specific message-box of a given user.
+     * @param user The target recipient
+     * @param msgbox The target message-box
+     * @param content The message to send
+     */
     public void send(String user, String msgbox, String content) {
         TotpContent totpContent;
         String req, resp;
@@ -85,6 +112,12 @@ public class TotpClient extends TotpProtocol {
         }
     }
 
+    /**
+     * Retrieve all the messages from the specific message-box of the given user.
+     * @param user The user who owns the messages
+     * @param msgbox The message-box that contains the messages
+     * @return Returns a list of messages that stores in a String array
+     */
     public String[] retrieve(String user, String msgbox) {
         TotpContent totpContent;
         String req, resp;
@@ -105,7 +138,11 @@ public class TotpClient extends TotpProtocol {
         }
     }
 
-    public String[] getFriendList() {
+    /**
+     * Retrieve the friend list of the current user.
+     * @return A list of friends that stores in a String array
+     */
+    public String[] retrieveFriendList() {
         TotpContent totpContent;
         String req, resp;
         clearError();
@@ -125,6 +162,10 @@ public class TotpClient extends TotpProtocol {
         }
     }
 
+    /**
+     * Send a heart-beat to the server.
+     * @throws IOException
+     */
     public void heartBeat() throws IOException {
         TotpContent totpContent;
         String req, resp;
@@ -138,7 +179,12 @@ public class TotpClient extends TotpProtocol {
         }
     }
 
-    public TotpContent goodbye() throws IOException {
+    /**
+     * Issue the server a protocol close request.
+     * @return The closed user sent from the server
+     * @throws IOException
+     */
+    public String goodbye() throws IOException {
         TotpContent totpContent;
         String req, resp;
         clearError();
@@ -149,12 +195,18 @@ public class TotpClient extends TotpProtocol {
         if (totpContent.status != TotpStatus.SUCCESS) {
             setError(totpContent.status.getReasonPhrase());
         }
-        return totpContent;
+        return (String) totpContent.content;
     }
 
-    public TotpContent receiveReq() throws IOException {
+    /**
+     * Block and wait for requests from server.
+     * @return Returns the content of the request. May vary from different requests.
+     *         PUSH: (String[]) A list of notification message.
+     * @throws IOException
+     */
+    public Object receiveReq() throws IOException {
         String req = read();
-        return parseReq(req);
+        return parseReq(req).content;
     }
 
     protected String contructReq(TotpCmd cmd, Object... args) {
@@ -340,6 +392,10 @@ public class TotpClient extends TotpProtocol {
         return totpContent;
     }
 
+    /**
+     * Get the token_id acquired from the server.
+     * @return
+     */
     public String getTokenId() {
         return this.token_id;
     }

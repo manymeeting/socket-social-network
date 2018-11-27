@@ -12,10 +12,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TotpServerTest {
@@ -57,6 +54,7 @@ class TotpServerTest {
         assertEquals("wall", req.get(TotpField.MSGBOX));
         totpServer.response(TotpCmd.SEND, TotpStatus.valueOf(330), req.get(TotpField.USER), req.get(TotpField.MSGBOX));
         req = totpServer.receiveReq();
+        assertEquals("DATA", req.get(TotpField.COMMAND));
         assertEquals("This is a wall message.", req.get(TotpField.MESSAGE));
         totpServer.response(TotpCmd.DATA, TotpStatus.valueOf(250));
     }

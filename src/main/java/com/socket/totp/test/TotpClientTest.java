@@ -2,7 +2,6 @@ package com.socket.totp.test;
 
 import com.socket.totp.TotpClient;
 import com.socket.totp.TotpCmd;
-import com.socket.totp.TotpContent;
 import com.socket.totp.TotpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         String token_id = totpClient.login("user1", "password");
         assertEquals("123456789012345678901234567890123456", token_id);
-        String[] msgs = totpClient.getFriendList();
+        String[] msgs = totpClient.retrieveFriendList();
         assertArrayEquals(new String[]{"user1", "user2"}, msgs);
     }
 
@@ -65,17 +64,16 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         String token_id = totpClient.login("user1", "password");
         assertEquals("123456789012345678901234567890123456", token_id);
-        TotpContent totpContent = totpClient.goodbye();
-        assertEquals("user1", totpContent.content);
+        String user = totpClient.goodbye();
+        assertEquals("user1", user);
         socket.close();
     }
 
     @Test void pushTest() throws IOException {
         Socket socket = new Socket("127.0.0.1", 9999);
         TotpClient totpClient = new TotpClient(socket);
-        TotpContent totpContent = totpClient.receiveReq();
-        Assertions.assertEquals(TotpCmd.PUSH, totpContent.cmd);
-        String[] msgs = (String[]) totpContent.content;
+        String[] msgs = (String[]) totpClient.receiveReq();
+        Assertions.assertFalse(totpClient.hasError());
         assertArrayEquals(new String[]{"user1 posted a message", "user2 posted a message"}, msgs);
         totpClient.response(TotpCmd.PUSH, TotpStatus.valueOf(250));
     }

@@ -11,46 +11,13 @@ public abstract class TotpProtocol {
     private DataOutputStream dos;
     private String errorMsg;
     private boolean errOccured;
-//    public static String decodeStatus(int status) {
-//        switch (status) {
-//            case 200:
-//                return "General success";
-//            case 210:
-//                return "System status";
-//            case 220:
-//                return "Service ready";
-//            case 221:
-//                return "Service closing transmission channel";
-//            case 250:
-//                return "Transfer action completed";
-//            case 330:
-//                return "Ready for list receiving";
-//            case 331:
-//                return "Start list transmission";
-//            case 421:
-//                return "Service not available, closing transmission channel";
-//            case 450:
-//                return "Unknown recipient";
-//            case 451:
-//                return "Local processing error";
-//            case 500:
-//                return "Command unrecognized";
-//            case 501:
-//                return "Error in parameters or arguments";
-//            case 502:
-//                return "Command not implemented";
-//            case 530:
-//                return "Error in parameters or arguments";
-//            case 540:
-//                return "Command not implemented";
-//            case 541:
-//                return "Authentication required";
-//            default:
-//                return null;
-//        }
-//    }
 
     //TODO: Replace Socket to SSLSocket
+    /**
+     * Creates a TotpProtocol that handles the TOTP based information
+     * exchanging using the specified underlying socket.
+     * @param socket
+     */
     public TotpProtocol(Socket socket) {
         errOccured = false;
         errorMsg = "";
@@ -63,6 +30,21 @@ public abstract class TotpProtocol {
         }
     }
 
+    /**
+     * Send a command-specific response back to the request initiator.
+     * @param cmd The command that you want to response for
+     * @param status The status of the request
+     * @param args Other arguments varied from each command.
+     *             HELO: No arguments
+     *             PASS: (String) token_id
+     *             DATA: No arguments
+     *             RETR: (List<String>) messages
+     *             FRND: (List<String>) friend_list
+     *             HRBT: No arguments
+     *             GBYE: (String) user
+     *             ERROR: No arguments
+     * @throws IOException
+     */
     public void response(TotpCmd cmd, TotpStatus status, Object... args) throws IOException {
         String resp = contructResp(cmd, status, args);
         write(resp);
@@ -84,6 +66,11 @@ public abstract class TotpProtocol {
 
     protected abstract TotpContent parseResp(TotpCmd cmd, String resp);
 
+    /**
+     * Check if any error occurs during message exchanging.
+     * Must check after each TOTP request.
+     * @return Returns true if any error occurs, false if not.
+     */
     public boolean hasError() {
         return this.errOccured;
     }

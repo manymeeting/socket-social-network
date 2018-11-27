@@ -11,8 +11,27 @@ import java.util.regex.Pattern;
 public class TotpServer extends TotpProtocol {
     private int tokenLen = 36;
 
+    /**
+     * Creates a TotpProtocol with server functionality
+     * that handles the TOTP based information exchanging
+     * using the specified underlying socket. The length
+     * of token_id is set to a default value 36.
+     * @param socket A socket for connecting to the server
+     */
     public TotpServer(Socket socket) {
+        this(socket, 36);
+    }
+
+    /**
+     * Creates a TotpProtocol with server functionality
+     * that handles the TOTP based information exchanging
+     * using the specified underlying socket.
+     * @param socket A socket for connecting to the server
+     * @param tokenLen The length of token_id
+     */
+    public TotpServer(Socket socket, int tokenLen) {
         super(socket);
+        this.tokenLen = tokenLen;
     }
 
     @Override
@@ -54,6 +73,12 @@ public class TotpServer extends TotpProtocol {
         }
     }
 
+    /**
+     * Push notifications to the client.
+     * @param messages A list of messages you want to push
+     * @return Returns a map contains a STATUS key
+     * @throws IOException
+     */
     public Map<TotpField, String> push(List<String> messages) throws IOException {
         Map<TotpField, String> map = new HashMap<>();
         TotpContent totpContent;
@@ -73,9 +98,18 @@ public class TotpServer extends TotpProtocol {
     }
 
     /**
-     * Block to receiveReq incoming data.
-     * @return A map contains multiple return values.
+     * Block to receive incoming data.
+     * @return Returns a map contains multiple return values.
      * Possible keys are defined in TotpField class.
+     * The followings are the keys used by each command:
+     *     HELO: COMMAND
+     *     PASS: COMMAND, USER, PASSWORD
+     *     SEND: COMMAND, TOKEN_ID, USER, MSGBOX
+     *     DATA: COMMAND, TOKEN_ID, MESSAGE
+     *     RETR: COMMAND, TOKEN_ID, USER, MSGBOX
+     *     FRND: COMMAND, TOKEN_ID
+     *     HRBT: COMMAMD, TOKEN_ID
+     *     GBYE: COMMAND, TOKEN_ID
      * @throws IOException
      */
     public Map<TotpField, String> receiveReq() throws IOException {
@@ -203,6 +237,10 @@ public class TotpServer extends TotpProtocol {
         return decapReq;
     }
 
+    /**
+     * Set the token_id length.
+     * @param length The length of token_id
+     */
     public void setTokenLength(int length) {
         this.tokenLen = length;
     }
