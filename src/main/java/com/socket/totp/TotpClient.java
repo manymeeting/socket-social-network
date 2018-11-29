@@ -47,7 +47,7 @@ public class TotpClient extends TotpProtocol {
      * in this instance.
      * @param user Username
      * @param password Password
-     * @return
+     * @return (String) token_id
      */
     public String login(String user, String password) {
         TotpContent totpContent;

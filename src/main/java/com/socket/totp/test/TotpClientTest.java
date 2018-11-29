@@ -69,8 +69,8 @@ class TotpClientTest {
         String token_id = totpClient.login("user1", "password");
         assertEquals("123456789012345678901234567890123456", token_id);
         // Retrieve user list
-        String[] msgs = totpClient.retrieveFriendList();
-        assertArrayEquals(new String[]{"user1", "user2"}, msgs);
+        String[] friends = totpClient.retrieveFriendList();
+        assertArrayEquals(new String[]{"user1", "user2"}, friends);
     }
 
     @Test void heartBeatTest() throws IOException {
