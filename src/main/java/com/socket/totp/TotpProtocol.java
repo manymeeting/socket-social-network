@@ -31,21 +31,21 @@ public abstract class TotpProtocol {
     }
 
     /**
-     * Send a command-specific response back to the request initiator.
-     * @param cmd The command that you want to response for
+     * Send a command-specific respond back to the request initiator.
+     * @param cmd The command that you want to respond for
      * @param status The status of the request
      * @param args Other arguments varied from each command.
-     *             HELO: No arguments
-     *             PASS: (String) token_id
-     *             DATA: No arguments
-     *             RETR: (List<String>) messages
-     *             FRND: (List<String>) friend_list
-     *             HRBT: No arguments
-     *             GBYE: (String) user
-     *             ERROR: No arguments
+     *             HELO: (TotpStatus) status
+     *             PASS: (TotpStatus) status, (String) token_id
+     *             DATA: (TotpStatus) status
+     *             RETR: (TotpStatus) status, (int) numberOfMessages, (int) totalLengthOfMessages, (List<String>) messages
+     *             FRND: (TotpStatus) status, (int) numberOfUsers, (int) totalLengthOfUsernames, (List<String>) friend_list
+     *             HRBT: (TotpStatus) status
+     *             GBYE: (TotpStatus) status, (String) user
+     *             ERROR: (TotpStatus) status
      * @throws IOException
      */
-    public void response(TotpCmd cmd, TotpStatus status, Object... args) throws IOException {
+    public void respond(TotpCmd cmd, TotpStatus status, Object... args) throws IOException {
         String resp = contructResp(cmd, status, args);
         write(resp);
     }

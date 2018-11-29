@@ -15,145 +15,202 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests listed here are independent to each other.
+ * To run the tests, run the tests with the same function name
+ * on both server and client side.
+ * Note: Should run the server side first then the client side.
+ *
+ * This test file is only for your reference when developing
+ * your business logic. It should be deleted before merging
+ * in to the master branch.
+ */
 class TotpServerTest {
+
     @Test
     public void loginTest() throws IOException {
+        // Create new socket
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
+        // Create server protocol
         TotpServer totpServer = new TotpServer(socket);
+        // Block for incoming requests from client
         Map<TotpField, String> req = totpServer.receiveReq();
         assertEquals("HELO", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.HELO, TotpStatus.valueOf(541));
+
+        //
+        // Validate the token_id sent with HELO...
+        // If token_id is "" or token_id is not valid,
+        // respond 541 to requests user and password
+        //
+
+        // Respond to the client
+        totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
+        // Block for incoming requests from client
         req = totpServer.receiveReq();
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.response(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        // Respond to the client
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
     }
 
     @Test
     public void postTest() throws IOException {
-        // Login
+        /* Login */
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
         Map<TotpField, String> req = totpServer.receiveReq();
         assertEquals("HELO", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.HELO, TotpStatus.valueOf(541));
+        totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.response(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
-        // Post
+        /* Post */
         req = totpServer.receiveReq();
+        // Validate the token_id from database
         assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
         assertEquals("SEND", req.get(TotpField.COMMAND));
         assertEquals("user2", req.get(TotpField.USER));
         assertEquals("wall", req.get(TotpField.MSGBOX));
-        totpServer.response(TotpCmd.SEND, TotpStatus.valueOf(330), req.get(TotpField.USER), req.get(TotpField.MSGBOX));
+        // Respond to the client
+        totpServer.respond(TotpCmd.SEND, TotpStatus.valueOf(330), req.get(TotpField.USER), req.get(TotpField.MSGBOX));
+        // Block for incoming requests
         req = totpServer.receiveReq();
         assertEquals("DATA", req.get(TotpField.COMMAND));
         assertEquals("This is a wall message.", req.get(TotpField.MESSAGE));
-        totpServer.response(TotpCmd.DATA, TotpStatus.valueOf(250));
+
+        //
+        // Save the message to the database...
+        //
+
+        totpServer.respond(TotpCmd.DATA, TotpStatus.valueOf(250));
     }
 
     @Test
     public void retrieveWallTest() throws IOException {
-        // Login
+        /* Login */
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
         Map<TotpField, String> req = totpServer.receiveReq();
         assertEquals("HELO", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.HELO, TotpStatus.valueOf(541));
+        totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.response(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
-        // Retrieve
+        /* Retrieve */
+        // Block for incoming requests
         req = totpServer.receiveReq();
+        // Validate the token_id from database
         assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
         assertEquals("RETR", req.get(TotpField.COMMAND));
         assertEquals("user2", req.get(TotpField.USER));
         assertEquals("wall", req.get(TotpField.MSGBOX));
+        // Retrieve the messages from database...
         List<String> wallMsgs = new ArrayList<>();
         wallMsgs.add("First message"); //13 chars
         wallMsgs.add("Second message"); //14 chars
-        totpServer.response(TotpCmd.RETR, TotpStatus.valueOf(331), 2, 27, wallMsgs);
+        // Respond the messages back to the client
+        totpServer.respond(TotpCmd.RETR, TotpStatus.valueOf(331), 2, 27, wallMsgs);
     }
 
     @Test
-    public void getFriendListTest() throws IOException {
-        // Login
+    public void retrieveFriendListTest() throws IOException {
+        /* Login */
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
         Map<TotpField, String> req = totpServer.receiveReq();
         assertEquals("HELO", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.HELO, TotpStatus.valueOf(541));
+        totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.response(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
-        // Get friend list
+        /* Retrieve friend list */
+        // Block for incoming requests
         req = totpServer.receiveReq();
+        // Validate the token_id from database
         assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
         assertEquals("FRND", req.get(TotpField.COMMAND));
+        // Retrieve user list from the database
         List<String> friends = new ArrayList<>();
-        friends.add("user1"); //13 chars
-        friends.add("user2"); //14 chars
-        totpServer.response(TotpCmd.RETR, TotpStatus.valueOf(331), 2, 10, friends);
+        friends.add("user1"); // 5 chars
+        friends.add("user2"); // 5 chars
+        // Respond the user list to the client
+        totpServer.respond(TotpCmd.RETR, TotpStatus.valueOf(331), 2, 10, friends);
     }
 
     @Test
     public void heartBeatTest() throws IOException {
+        // Initialize
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
+        // Block for incoming requests
         Map<TotpField, String> req = totpServer.receiveReq();
+        // Validate the token_id from database
         assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
         assertEquals("HRBT", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.HRBT, TotpStatus.valueOf(200));
+        // Respond to the client
+        totpServer.respond(TotpCmd.HRBT, TotpStatus.valueOf(200));
     }
 
     @Test
     public void closeTest() throws IOException {
-        // Login
+        /* Login */
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
         Map<TotpField, String> req = totpServer.receiveReq();
         assertEquals("HELO", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.HELO, TotpStatus.valueOf(541));
+        totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.response(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
-        // Close
+        /* Close */
+        // Block for incoming requests
         req = totpServer.receiveReq();
+        // Validate the token_id from database
         assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
         assertEquals("GBYE", req.get(TotpField.COMMAND));
-        totpServer.response(TotpCmd.GBYE, TotpStatus.valueOf(200), "user1");
+
+        //
+        // Retrieve the username from the database
+        //
+
+        // Respond to the client
+        totpServer.respond(TotpCmd.GBYE, TotpStatus.valueOf(200), "user1");
+        // Close the socket
         socket.close();
     }
 
     @Test
     public void pushTest() throws IOException {
+        // Initialize
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
+        // Retrieve messages to push from the database
         List<String> messages = new ArrayList<>();
         messages.add("user1 posted a message");
         messages.add("user2 posted a message");
+        // Push the messages
         Map<TotpField, String> map = totpServer.push(messages);
+        // Check the response status from the client
         assertEquals("250", map.get(TotpField.STATUS));
     }
 }

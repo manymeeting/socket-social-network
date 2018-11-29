@@ -102,7 +102,7 @@ public class TotpServer extends TotpProtocol {
      * @return Returns a map contains multiple return values.
      * Possible keys are defined in TotpField class.
      * The followings are the keys used by each command:
-     *     HELO: COMMAND
+     *     HELO: COMMAND, TOKEN_ID
      *     PASS: COMMAND, USER, PASSWORD
      *     SEND: COMMAND, TOKEN_ID, USER, MSGBOX
      *     DATA: COMMAND, TOKEN_ID, MESSAGE
@@ -130,7 +130,7 @@ public class TotpServer extends TotpProtocol {
             if (matcher.groupCount() > 1)
                 arg = matcher.group(2);
         } else {
-            response(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
+            respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
         }
         map.put(TotpField.COMMAND, cmd);
         switch (TotpCmd.valueOf(cmd)) {
@@ -145,7 +145,7 @@ public class TotpServer extends TotpProtocol {
                     map.put(TotpField.USER, user);
                     map.put(TotpField.PASSWORD, password);
                 } else {
-                    response(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
+                    respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
                 }
                 break;
             case SEND:
@@ -157,7 +157,7 @@ public class TotpServer extends TotpProtocol {
                     map.put(TotpField.USER, recipient);
                     map.put(TotpField.MSGBOX, msgbox);
                 } else {
-                    response(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
+                    respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
                 }
                 break;
             case DATA:
@@ -186,7 +186,7 @@ public class TotpServer extends TotpProtocol {
                     map.put(TotpField.USER, user);
                     map.put(TotpField.MSGBOX, msgbox);
                 } else {
-                    response(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
+                    respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
                 }
                 break;
             case FRND:
@@ -196,7 +196,7 @@ public class TotpServer extends TotpProtocol {
             case GBYE:
                 break;
             default:
-                response(TotpCmd.ERROR, TotpStatus.COMMAND_UNRECOGNIZED);
+                respond(TotpCmd.ERROR, TotpStatus.COMMAND_UNRECOGNIZED);
         }
         return map;
     }
