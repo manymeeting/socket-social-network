@@ -79,8 +79,8 @@ public class TotpServer extends TotpProtocol {
      * @return Returns a map contains a STATUS key
      * @throws IOException
      */
-    public Map<TotpField, String> push(List<String> messages) throws IOException {
-        Map<TotpField, String> map = new HashMap<>();
+    public Map<TotpReqHeaderField, String> push(List<String> messages) throws IOException {
+        Map<TotpReqHeaderField, String> map = new HashMap<>();
         TotpContent totpContent;
         String req, resp;
         clearError();
@@ -93,14 +93,14 @@ public class TotpServer extends TotpProtocol {
         if (totpContent.status != TotpStatus.valueOf(250)) {
             setError(totpContent.status.getReasonPhrase());
         }
-        map.put(TotpField.STATUS, String.valueOf(totpContent.status.getValue()));
+        map.put(TotpReqHeaderField.STATUS, String.valueOf(totpContent.status.getValue()));
         return map;
     }
 
     /**
      * Block to receive incoming data.
      * @return Returns a map contains multiple return values.
-     * Possible keys are defined in TotpField class.
+     * Possible keys are defined in TotpReqHeaderField class.
      * The followings are the keys used by each command:
      *     HELO: COMMAND, TOKEN_ID
      *     PASS: COMMAND, USER, PASSWORD
@@ -112,15 +112,15 @@ public class TotpServer extends TotpProtocol {
      *     GBYE: COMMAND, TOKEN_ID
      * @throws IOException
      */
-    public Map<TotpField, String> receiveReq() throws IOException {
+    public Map<TotpReqHeaderField, String> receiveReq() throws IOException {
         String req = read();
         return parseReq(req);
     }
 
-    protected Map<TotpField, String> parseReq(String req) throws IOException {
-        Map<TotpField, String> map = new HashMap<>();
+    protected Map<TotpReqHeaderField, String> parseReq(String req) throws IOException {
+        Map<TotpReqHeaderField, String> map = new HashMap<>();
         String[] decapReq = decapToken(req);
-        map.put(TotpField.TOKEN_ID, decapReq[0]);
+        map.put(TotpReqHeaderField.TOKEN_ID, decapReq[0]);
         req = decapReq[1];
         Pattern pattern = Pattern.compile("^(\\w+)(?:\r\n|\\s)?([\\s\\S]+)?\r\n$");
         Matcher matcher = pattern.matcher(req);
@@ -132,7 +132,7 @@ public class TotpServer extends TotpProtocol {
         } else {
             respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
         }
-        map.put(TotpField.COMMAND, cmd);
+        map.put(TotpReqHeaderField.COMMAND, cmd);
         switch (TotpCmd.valueOf(cmd)) {
             case HELO:
                 break;
@@ -142,8 +142,8 @@ public class TotpServer extends TotpProtocol {
                 if (matcher.find()) {
                     String user = matcher.group(1);
                     String password = matcher.group(2);
-                    map.put(TotpField.USER, user);
-                    map.put(TotpField.PASSWORD, password);
+                    map.put(TotpReqHeaderField.USER, user);
+                    map.put(TotpReqHeaderField.PASSWORD, password);
                 } else {
                     respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
                 }
@@ -154,8 +154,8 @@ public class TotpServer extends TotpProtocol {
                 if (matcher.find()) {
                     String recipient = matcher.group(1);
                     String msgbox = matcher.group(2);
-                    map.put(TotpField.USER, recipient);
-                    map.put(TotpField.MSGBOX, msgbox);
+                    map.put(TotpReqHeaderField.USER, recipient);
+                    map.put(TotpReqHeaderField.MSGBOX, msgbox);
                 } else {
                     respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
                 }
@@ -171,7 +171,7 @@ public class TotpServer extends TotpProtocol {
                     if (numOfMsg != msgs.length || totalSize != 0) {
                         setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
                     }
-                    map.put(TotpField.MESSAGE, msgs[0]);
+                    map.put(TotpReqHeaderField.MESSAGE, msgs[0]);
                 } else {
                     setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
                 }
@@ -183,8 +183,8 @@ public class TotpServer extends TotpProtocol {
                 if (matcher.find()) {
                     String user = matcher.group(1);
                     String msgbox = matcher.group(2);
-                    map.put(TotpField.USER, user);
-                    map.put(TotpField.MSGBOX, msgbox);
+                    map.put(TotpReqHeaderField.USER, user);
+                    map.put(TotpReqHeaderField.MSGBOX, msgbox);
                 } else {
                     respond(TotpCmd.ERROR, TotpStatus.ERROR_PARAMETERS_ARGUMENTS);
                 }

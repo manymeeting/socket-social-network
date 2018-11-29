@@ -1,7 +1,7 @@
 package com.socket.totp.test;
 
 import com.socket.totp.TotpCmd;
-import com.socket.totp.TotpField;
+import com.socket.totp.TotpReqHeaderField;
 import com.socket.totp.TotpServer;
 import com.socket.totp.TotpStatus;
 import org.junit.jupiter.api.Test;
@@ -35,8 +35,8 @@ class TotpServerTest {
         // Create server protocol
         TotpServer totpServer = new TotpServer(socket);
         // Block for incoming requests from client
-        Map<TotpField, String> req = totpServer.receiveReq();
-        assertEquals("HELO", req.get(TotpField.COMMAND));
+        Map<TotpReqHeaderField, String> req = totpServer.receiveReq();
+        assertEquals("HELO", req.get(TotpReqHeaderField.COMMAND));
 
         //
         // Validate the token_id sent with HELO...
@@ -48,9 +48,9 @@ class TotpServerTest {
         totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         // Block for incoming requests from client
         req = totpServer.receiveReq();
-        assertEquals("PASS", req.get(TotpField.COMMAND));
-        assertEquals("user1", req.get(TotpField.USER));
-        assertEquals("password", req.get(TotpField.PASSWORD));
+        assertEquals("PASS", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user1", req.get(TotpReqHeaderField.USER));
+        assertEquals("password", req.get(TotpReqHeaderField.PASSWORD));
         // Respond to the client
         totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
     }
@@ -61,28 +61,28 @@ class TotpServerTest {
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
-        Map<TotpField, String> req = totpServer.receiveReq();
-        assertEquals("HELO", req.get(TotpField.COMMAND));
+        Map<TotpReqHeaderField, String> req = totpServer.receiveReq();
+        assertEquals("HELO", req.get(TotpReqHeaderField.COMMAND));
         totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
-        assertEquals("PASS", req.get(TotpField.COMMAND));
-        assertEquals("user1", req.get(TotpField.USER));
-        assertEquals("password", req.get(TotpField.PASSWORD));
+        assertEquals("PASS", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user1", req.get(TotpReqHeaderField.USER));
+        assertEquals("password", req.get(TotpReqHeaderField.PASSWORD));
         totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
         /* Post */
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
-        assertEquals("SEND", req.get(TotpField.COMMAND));
-        assertEquals("user2", req.get(TotpField.USER));
-        assertEquals("wall", req.get(TotpField.MSGBOX));
+        assertEquals("123456789012345678901234567890123456", req.get(TotpReqHeaderField.TOKEN_ID));
+        assertEquals("SEND", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user2", req.get(TotpReqHeaderField.USER));
+        assertEquals("wall", req.get(TotpReqHeaderField.MSGBOX));
         // Respond to the client
-        totpServer.respond(TotpCmd.SEND, TotpStatus.valueOf(330), req.get(TotpField.USER), req.get(TotpField.MSGBOX));
+        totpServer.respond(TotpCmd.SEND, TotpStatus.valueOf(330), req.get(TotpReqHeaderField.USER), req.get(TotpReqHeaderField.MSGBOX));
         // Block for incoming requests
         req = totpServer.receiveReq();
-        assertEquals("DATA", req.get(TotpField.COMMAND));
-        assertEquals("This is a wall message.", req.get(TotpField.MESSAGE));
+        assertEquals("DATA", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("This is a wall message.", req.get(TotpReqHeaderField.MESSAGE));
 
         //
         // Save the message to the database...
@@ -97,23 +97,23 @@ class TotpServerTest {
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
-        Map<TotpField, String> req = totpServer.receiveReq();
-        assertEquals("HELO", req.get(TotpField.COMMAND));
+        Map<TotpReqHeaderField, String> req = totpServer.receiveReq();
+        assertEquals("HELO", req.get(TotpReqHeaderField.COMMAND));
         totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
-        assertEquals("PASS", req.get(TotpField.COMMAND));
-        assertEquals("user1", req.get(TotpField.USER));
-        assertEquals("password", req.get(TotpField.PASSWORD));
+        assertEquals("PASS", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user1", req.get(TotpReqHeaderField.USER));
+        assertEquals("password", req.get(TotpReqHeaderField.PASSWORD));
         totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
         /* Retrieve */
         // Block for incoming requests
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
-        assertEquals("RETR", req.get(TotpField.COMMAND));
-        assertEquals("user2", req.get(TotpField.USER));
-        assertEquals("wall", req.get(TotpField.MSGBOX));
+        assertEquals("123456789012345678901234567890123456", req.get(TotpReqHeaderField.TOKEN_ID));
+        assertEquals("RETR", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user2", req.get(TotpReqHeaderField.USER));
+        assertEquals("wall", req.get(TotpReqHeaderField.MSGBOX));
         // Retrieve the messages from database...
         List<String> wallMsgs = new ArrayList<>();
         wallMsgs.add("First message"); //13 chars
@@ -128,21 +128,21 @@ class TotpServerTest {
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
-        Map<TotpField, String> req = totpServer.receiveReq();
-        assertEquals("HELO", req.get(TotpField.COMMAND));
+        Map<TotpReqHeaderField, String> req = totpServer.receiveReq();
+        assertEquals("HELO", req.get(TotpReqHeaderField.COMMAND));
         totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
-        assertEquals("PASS", req.get(TotpField.COMMAND));
-        assertEquals("user1", req.get(TotpField.USER));
-        assertEquals("password", req.get(TotpField.PASSWORD));
+        assertEquals("PASS", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user1", req.get(TotpReqHeaderField.USER));
+        assertEquals("password", req.get(TotpReqHeaderField.PASSWORD));
         totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
         /* Retrieve friend list */
         // Block for incoming requests
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
-        assertEquals("FRND", req.get(TotpField.COMMAND));
+        assertEquals("123456789012345678901234567890123456", req.get(TotpReqHeaderField.TOKEN_ID));
+        assertEquals("FRND", req.get(TotpReqHeaderField.COMMAND));
         // Retrieve user list from the database
         List<String> friends = new ArrayList<>();
         friends.add("user1"); // 5 chars
@@ -158,10 +158,10 @@ class TotpServerTest {
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
         // Block for incoming requests
-        Map<TotpField, String> req = totpServer.receiveReq();
+        Map<TotpReqHeaderField, String> req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
-        assertEquals("HRBT", req.get(TotpField.COMMAND));
+        assertEquals("123456789012345678901234567890123456", req.get(TotpReqHeaderField.TOKEN_ID));
+        assertEquals("HRBT", req.get(TotpReqHeaderField.COMMAND));
         // Respond to the client
         totpServer.respond(TotpCmd.HRBT, TotpStatus.valueOf(200));
     }
@@ -172,21 +172,21 @@ class TotpServerTest {
         ServerSocket servSocket = new ServerSocket(9999);
         Socket socket = servSocket.accept();
         TotpServer totpServer = new TotpServer(socket);
-        Map<TotpField, String> req = totpServer.receiveReq();
-        assertEquals("HELO", req.get(TotpField.COMMAND));
+        Map<TotpReqHeaderField, String> req = totpServer.receiveReq();
+        assertEquals("HELO", req.get(TotpReqHeaderField.COMMAND));
         totpServer.respond(TotpCmd.HELO, TotpStatus.valueOf(541));
         req = totpServer.receiveReq();
-        assertEquals("PASS", req.get(TotpField.COMMAND));
-        assertEquals("user1", req.get(TotpField.USER));
-        assertEquals("password", req.get(TotpField.PASSWORD));
+        assertEquals("PASS", req.get(TotpReqHeaderField.COMMAND));
+        assertEquals("user1", req.get(TotpReqHeaderField.USER));
+        assertEquals("password", req.get(TotpReqHeaderField.PASSWORD));
         totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
 
         /* Close */
         // Block for incoming requests
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
-        assertEquals("GBYE", req.get(TotpField.COMMAND));
+        assertEquals("123456789012345678901234567890123456", req.get(TotpReqHeaderField.TOKEN_ID));
+        assertEquals("GBYE", req.get(TotpReqHeaderField.COMMAND));
 
         //
         // Retrieve the username from the database
@@ -209,8 +209,8 @@ class TotpServerTest {
         messages.add("user1 posted a message");
         messages.add("user2 posted a message");
         // Push the messages
-        Map<TotpField, String> map = totpServer.push(messages);
+        Map<TotpReqHeaderField, String> map = totpServer.push(messages);
         // Check the response status from the client
-        assertEquals("250", map.get(TotpField.STATUS));
+        assertEquals("250", map.get(TotpReqHeaderField.STATUS));
     }
 }
