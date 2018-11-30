@@ -4,8 +4,11 @@ import com.socket.server.dao.UserDao;
 import com.socket.server.entity.AppUser;
 import com.socket.server.entity.NotificationMessage;
 import com.socket.server.entity.OnlineUser;
-import com.socket.server.thread.SlaveThread;
 import com.socket.server.thread.NotificationThread;
+import com.socket.server.thread.SlaveThread;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,6 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServerApp {
 
+    static final Logger logger = LogManager.getLogger(ServerApp.class);
     private ServerSocket serverSocket = null;
     private ServerSocket serverNotiSocket = null;
     private static final int DEFAULT_PORT = 9091;
@@ -25,11 +29,13 @@ public class ServerApp {
     public static final UserDao USER_DAO = new UserDao();
 
     public static void main(String[] args) {
+        logger.log(Level.INFO, "Initializing server...");
         ServerApp app = new ServerApp();
         app.start();
     }
 
     private void start() {
+        logger.log(Level.INFO, "Starting server...");
         try {
             serverSocket = new ServerSocket(DEFAULT_PORT);
             System.out.println("Server started, listening on " + DEFAULT_PORT);
