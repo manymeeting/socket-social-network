@@ -52,7 +52,7 @@ class TotpServerTest {
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
         // Respond to the client
-        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "1234567890-1234567890-1234567890-123");
     }
 
     @Test
@@ -68,12 +68,12 @@ class TotpServerTest {
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "1234567890-1234567890-1234567890-123");
 
         /* Post */
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
+        assertEquals("1234567890-1234567890-1234567890-123", req.get(TotpField.TOKEN_ID));
         assertEquals("SEND", req.get(TotpField.COMMAND));
         assertEquals("user2", req.get(TotpField.USER));
         assertEquals("wall", req.get(TotpField.MSGBOX));
@@ -104,13 +104,13 @@ class TotpServerTest {
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "1234567890-1234567890-1234567890-123");
 
         /* Retrieve */
         // Block for incoming requests
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
+        assertEquals("1234567890-1234567890-1234567890-123", req.get(TotpField.TOKEN_ID));
         assertEquals("RETR", req.get(TotpField.COMMAND));
         assertEquals("user2", req.get(TotpField.USER));
         assertEquals("wall", req.get(TotpField.MSGBOX));
@@ -135,13 +135,13 @@ class TotpServerTest {
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "1234567890-1234567890-1234567890-123");
 
         /* Retrieve friend list */
         // Block for incoming requests
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
+        assertEquals("1234567890-1234567890-1234567890-123", req.get(TotpField.TOKEN_ID));
         assertEquals("FRND", req.get(TotpField.COMMAND));
         // Retrieve user list from the database
         List<String> friends = new ArrayList<>();
@@ -160,7 +160,7 @@ class TotpServerTest {
         // Block for incoming requests
         Map<TotpField, String> req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
+        assertEquals("1234567890-1234567890-1234567890-123", req.get(TotpField.TOKEN_ID));
         assertEquals("HRBT", req.get(TotpField.COMMAND));
         // Respond to the client
         totpServer.respond(TotpCmd.HRBT, TotpStatus.valueOf(200));
@@ -179,13 +179,13 @@ class TotpServerTest {
         assertEquals("PASS", req.get(TotpField.COMMAND));
         assertEquals("user1", req.get(TotpField.USER));
         assertEquals("password", req.get(TotpField.PASSWORD));
-        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "123456789012345678901234567890123456");
+        totpServer.respond(TotpCmd.PASS, TotpStatus.valueOf(200), "1234567890-1234567890-1234567890-123");
 
         /* Close */
         // Block for incoming requests
         req = totpServer.receiveReq();
         // Validate the token_id from database
-        assertEquals("123456789012345678901234567890123456", req.get(TotpField.TOKEN_ID));
+        assertEquals("1234567890-1234567890-1234567890-123", req.get(TotpField.TOKEN_ID));
         assertEquals("GBYE", req.get(TotpField.COMMAND));
 
         //

@@ -224,7 +224,7 @@ public class TotpServer extends TotpProtocol {
 
     private String[] decapToken(String req) {
         String[] decapReq = new String[2];
-        Pattern pattern = Pattern.compile("^(\\w{" + tokenLen + "}\\b)\\s([\\s\\S]+)$");
+        Pattern pattern = Pattern.compile("^([\\w-]{" + tokenLen + "}\\b)\\s([\\s\\S]+)$");
         Matcher matcher = pattern.matcher(req);
         if (!matcher.matches()) {
             decapReq[0] = "";
