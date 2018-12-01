@@ -217,7 +217,8 @@ public class TotpClient extends TotpProtocol {
                 req = "HELO\r\n";
                 break;
             case PASS:
-                req = String.format("PASS %s %s\r\n", args[0], args[1]);
+                String encrypted = AES.encrypt((String) args[1], AESKey);
+                req = String.format("PASS %s %s\r\n", args[0], encrypted);
                 break;
             case SEND:
                 req = String.format("SEND %s:%s\r\n", args[0], args[1]);
