@@ -7,6 +7,12 @@ import java.util.List;
 
 public class UserDao {
 
+    MongoDBManager dbManager;
+
+    public UserDao() {
+        this.dbManager = new MongoDBManager();
+    }
+
     // TODO
     private List<String> fetchUnreadMessage() {
         return new ArrayList<>();
@@ -20,9 +26,9 @@ public class UserDao {
         }
     }
 
-    // TODO
-    private boolean isValid(String username, String password) {
-        return true;
+    private boolean isValid(String userName, String passWord) {
+        if (dbManager == null) return false;
+        return dbManager.isValidUser(userName, passWord);
     }
 
     private AppUser getUser(String username, String password) {
