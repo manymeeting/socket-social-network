@@ -66,8 +66,11 @@ public class ServerApp {
     public void addMessage(NotificationMessage notificationMessage) {
         if (notificationMessage != null) {
             messagesToSendQueue.offer(notificationMessage);
-            // TODO store message into database
         }
+    }
+
+    public void sendMsgToDB(String message, Date timeStamp) {
+            USER_DAO.addMsgToDB(message, timeStamp);
     }
 
     public AppUser validate(String readbuf) {

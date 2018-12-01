@@ -9,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Date;
 
 public class SlaveThread extends Thread {
 
@@ -60,9 +61,12 @@ public class SlaveThread extends Thread {
                     System.out.println("Connection closed");
                     break;
                 }
+                String msg = user.getUsername() + " posted: " + readbuf;
                 sendMessage(NotificationMessage.EMPTY_TOKEN,
-                        String.format("%s posted: %s", user.getUsername(), readbuf));
+                        String.format(msg));
+                server.sendMsgToDB(msg, new Date());
             }
+
             dis.close();
             dos.close();
         } catch (EOFException e) {

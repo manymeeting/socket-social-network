@@ -8,6 +8,7 @@ import org.bson.Document;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -60,6 +61,18 @@ public class MongoDBManager {
         return false;
     }
 
+    public boolean addMessageInfo(String message, Date timeStamp) {
+        Document doc = new Document();
+        doc.append("message", message);
+        doc.append("timeStamp", timeStamp);
+        MongoCollection msgGroup = db.getCollection("message");
+        if (msgGroup == null) {
+            db.createCollection("message");
+            msgGroup = db.getCollection("message");
+        }
+        msgGroup.insertOne(doc);
+        return true;
+    }
 
     /**
      * For functional test only
