@@ -305,7 +305,7 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case PASS:
-                pattern = Pattern.compile("(\\d+\\b)\\s(\\w+)\r\n");
+                pattern = Pattern.compile("(\\d+\\b)\\s([\\w-]+)\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
                     totpContent.status = TotpStatus.valueOf(Integer.valueOf(matcher.group(1)));

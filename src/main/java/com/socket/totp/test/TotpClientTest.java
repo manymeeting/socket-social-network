@@ -30,7 +30,7 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         // Do login
         String token_id = totpClient.login("user1", "password");
-        assertEquals("123456789012345678901234567890123456", token_id);
+        assertEquals("1234567890-1234567890-1234567890-123", token_id);
     }
 
     @Test
@@ -41,7 +41,7 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         // Do login
         String token_id = totpClient.login("user1", "password");
-        assertEquals("123456789012345678901234567890123456", token_id);
+        assertEquals("1234567890-1234567890-1234567890-123", token_id);
         // Post a message to user2's wall through SEND command
         totpClient.send("user2", "wall", "This is a wall message.");
         assertFalse(totpClient.hasError());
@@ -54,7 +54,7 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         // Login
         String token_id = totpClient.login("user1", "password");
-        assertEquals("123456789012345678901234567890123456", token_id);
+        assertEquals("1234567890-1234567890-1234567890-123", token_id);
         // Retrieve user2's wall messages
         String[] msgs = totpClient.retrieve("user2", "wall");
         assertArrayEquals(new String[]{"First message", "Second message"}, msgs);
@@ -67,7 +67,7 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         // Login
         String token_id = totpClient.login("user1", "password");
-        assertEquals("123456789012345678901234567890123456", token_id);
+        assertEquals("1234567890-1234567890-1234567890-123", token_id);
         // Retrieve user list
         String[] friends = totpClient.retrieveFriendList();
         assertArrayEquals(new String[]{"user1", "user2"}, friends);
@@ -76,7 +76,7 @@ class TotpClientTest {
     @Test void heartBeatTest() throws IOException {
         // Initialize
         Socket socket = new Socket("127.0.0.1", 9999);
-        String token_id = "123456789012345678901234567890123456";
+        String token_id = "1234567890-1234567890-1234567890-123";
         TotpClient totpClient = new TotpClient(socket, token_id);
         // Send heart beat
         totpClient.heartBeat();
@@ -89,7 +89,7 @@ class TotpClientTest {
         TotpClient totpClient = new TotpClient(socket);
         // Login
         String token_id = totpClient.login("user1", "password");
-        assertEquals("123456789012345678901234567890123456", token_id);
+        assertEquals("1234567890-1234567890-1234567890-123", token_id);
         // Send GBYE
         String user = totpClient.goodbye();
         assertEquals("user1", user);
