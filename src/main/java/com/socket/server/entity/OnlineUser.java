@@ -7,6 +7,7 @@ import java.net.Socket;
 public class OnlineUser {
     private Socket notiSocket;
     private SlaveThread slaveThread;
+    private String token;
     // TODO Add heartbeat socket
 
     public OnlineUser(SlaveThread slaveThread, Socket notiSocket) {
@@ -18,5 +19,11 @@ public class OnlineUser {
     }
     public SlaveThread getSlaveThread() {
         return this.slaveThread;
+    }
+    public String getToken() {
+        return this.token;
+    }
+    public void setToken(String token) {
+        this.token = token;
     }
 }

@@ -195,6 +195,7 @@ public class TotpClient extends TotpProtocol {
         if (totpContent.status != TotpStatus.SUCCESS) {
             setError(totpContent.status.getReasonPhrase());
         }
+        super.close(); // Close IO streams
         return (String) totpContent.content;
     }
 
@@ -407,5 +408,9 @@ public class TotpClient extends TotpProtocol {
     protected void write(String msg) throws IOException {
         if (!token_id.equals("")) msg = encapToken(msg);
         super.write(msg);
+    }
+
+    public void close() throws IOException{
+        super.close();
     }
 }

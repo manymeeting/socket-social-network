@@ -92,4 +92,16 @@ public abstract class TotpProtocol {
         this.errorMsg = "";
         this.errOccured = false;
     }
+
+    protected void close() throws IOException{
+        this.dis.close();
+        this.dos.close();
+    }
+
+    public DataInputStream getDis() {
+        return this.dis;
+    }
+    public DataOutputStream getDos() {
+        return this.dos;
+    }
 }

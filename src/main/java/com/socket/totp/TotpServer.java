@@ -244,4 +244,9 @@ public class TotpServer extends TotpProtocol {
     public void setTokenLength(int length) {
         this.tokenLen = length;
     }
+
+
+    public void close() throws IOException{
+        super.close();
+    }
 }
