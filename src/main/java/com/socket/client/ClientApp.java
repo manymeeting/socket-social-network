@@ -48,7 +48,8 @@ public class ClientApp {
             notiDos = new DataOutputStream(notiSocket.getOutputStream());
             scanner = new Scanner(System.in);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not connect to server.");
+            System.exit(0);
         }
 
         NotificationListenerThread notiThread = new NotificationListenerThread();
@@ -80,6 +81,7 @@ public class ClientApp {
                     String msgBoxId = params[2];
                     String message = String.join(" ", Arrays.copyOfRange(params, 3, params.length));
                     clientTotp.send(toUserId, msgBoxId, message);
+                    checkTotpError();
                     continue;
                 }
                 else if(command.equals("exit")) {
@@ -87,6 +89,7 @@ public class ClientApp {
                         System.out.println("Error: Wrong parameter format.");
                         continue;
                     }
+                    checkTotpError();
                     clientTotp.goodbye();
                     break;
                 }
@@ -96,6 +99,9 @@ public class ClientApp {
                         continue;
                     }
                     String[] allOnlineUsers = clientTotp.retrieveFriendList();
+                    if(!checkTotpError()) {
+                        continue;
+                    }
                     for (String userName : allOnlineUsers) {
                         System.out.println(userName);
                     }
@@ -105,7 +111,8 @@ public class ClientApp {
         } catch (EOFException e) {
             // Server closed
             logger.log(Level.INFO, String.format("Server closed."));
-        } catch (IOException e) {
+        } catch (Exception e) {
+            logger.log(Level.ERROR, String.format("Internal error. See stack trace for more information."));
             e.printStackTrace();
         } finally {
             isTerminated = true;
@@ -115,8 +122,22 @@ public class ClientApp {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
         }
         System.exit(0);
+    }
+
+    /**
+     *
+     * @return false: If error exists, otherwise return true.
+     *
+     */
+    private static boolean checkTotpError() {
+        if(clientTotp.hasError()) {
+            logger.error(clientTotp.getErrorMsg());
+            return false;
+        }
+        return true;
     }
 
     private static void shutdownAll() {
@@ -141,6 +162,8 @@ public class ClientApp {
                 while ((notification = notiDis.readUTF()) != null) {
                     System.out.println(notification);
                 }
+            } catch (EOFException e) {
+              logger.log(Level.INFO, "Notification thread shutdown due to server closed.");
             } catch (IOException e) {
                 if(!isTerminated) {
                     // Print out stack if not properly terminated by main thread

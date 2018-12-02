@@ -106,11 +106,6 @@ public class ServerApp {
         return onlineUsersMap.values().stream().map(OnlineUser::getUserName).collect(Collectors.toList());
     }
 
-    public int getSizeOfAllUsers() {
-        // TODO Implement a function in USER_DAO
-        return 0;
-    }
-
     public void removeOnlineUser(String token) {
         if (onlineUsersMap.containsKey(token)) {
             // Close notification socket

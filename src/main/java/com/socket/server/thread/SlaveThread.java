@@ -144,9 +144,10 @@ public class SlaveThread extends Thread {
                 // FRND
                 if(reqCommand.equals(TotpCmd.FRND.toString())) {
                     List<String> onlineUserNames = this.server.getOnlineUsers();
-                    int sizeOfAllUsers = this.server.getSizeOfAllUsers();
+                    int totalSize = 0;
+                    for (String str : onlineUserNames) totalSize += str.length();
                     serverTotp.respond(TotpCmd.FRND, TotpStatus.START_LIST_TRANSMISSION,
-                            onlineUserNames.size(), sizeOfAllUsers, onlineUserNames);
+                            onlineUserNames.size(), totalSize, onlineUserNames);
                     continue;
                 }
             }

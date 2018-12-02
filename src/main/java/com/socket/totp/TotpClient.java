@@ -184,6 +184,7 @@ public class TotpClient extends TotpProtocol {
      * @return The closed user sent from the server
      * @throws IOException
      */
+    // TODO Please handle IOException and setError
     public String goodbye() throws IOException {
         TotpContent totpContent;
         String req, resp;
