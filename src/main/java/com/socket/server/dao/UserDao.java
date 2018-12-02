@@ -3,6 +3,7 @@ package com.socket.server.dao;
 import com.socket.server.entity.AppUser;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class UserDao {
@@ -13,8 +14,8 @@ public class UserDao {
         this.dbManager = new MongoDBManager();
     }
 
-    // TODO
     private List<String> fetchUnreadMessage() {
+
         return new ArrayList<>();
     }
 
@@ -30,6 +31,13 @@ public class UserDao {
         if (dbManager == null) return false;
         return dbManager.isValidUser(userName, passWord);
     }
+
+    public boolean addMsgToDB(String sender, String receiver, String msg, Date timeStamp) {
+        if (msg == null || timeStamp == null) return false;
+        dbManager.addMessageInfo(sender, receiver, msg, timeStamp);
+        return true;
+    }
+
 
     private AppUser getUser(String username, String password) {
         AppUser user = new AppUser(username, password);

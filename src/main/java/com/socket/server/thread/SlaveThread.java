@@ -17,6 +17,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -104,6 +105,7 @@ public class SlaveThread extends Thread {
                     setOnlineStatus(OnlineStatus.OFFLINE);
                     break;
                 }
+
                 // SEND
                 if(reqCommand.equals(TotpCmd.SEND.toString())) {
                     this.receivingDataStatus = ReceivingDataStatus.RECEIVING;
