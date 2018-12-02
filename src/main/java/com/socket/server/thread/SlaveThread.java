@@ -92,7 +92,8 @@ public class SlaveThread extends Thread {
                         }
                         else {
                             // Login validation failed
-                            serverTotp.respond(TotpCmd.PASS, TotpStatus.PERMISSION_FAILED);
+                            serverTotp.respond(TotpCmd.PASS, TotpStatus.PERMISSION_FAILED,
+                                    TotpStatus.PERMISSION_FAILED.getReasonPhrase());
                         }
                         continue;
                     }

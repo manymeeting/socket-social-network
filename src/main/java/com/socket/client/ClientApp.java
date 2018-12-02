@@ -55,13 +55,21 @@ public class ClientApp {
         try {
             notiThread.start();
 
-            // Prompt for username and password
-            System.out.println("Please input username: ");
-            String username = scanner.nextLine().trim();
-            System.out.println("Please input password: ");
-            String password = scanner.nextLine().trim();
-            String token = clientTotp.login(username, password);
-            System.out.println("Token: " + token);
+            boolean isLoginSucess = false;
+            // Prompt for username and password until a successful login
+            while(!isLoginSucess) {
+                System.out.println("Please input username: ");
+                String username = scanner.nextLine().trim();
+                System.out.println("Please input password: ");
+                String password = scanner.nextLine().trim();
+                String token = clientTotp.login(username, password);
+                if(hasClientTotpError()) {
+                    System.out.println(clientTotp.getErrorMsg());
+                    continue;
+                }
+                System.out.println("Token: " + token);
+                isLoginSucess = true;
+            }
 
             while (scanner.hasNextLine()) {
                 String[] params = scanner.nextLine().trim().split(" ");

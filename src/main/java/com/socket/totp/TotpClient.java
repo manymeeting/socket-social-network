@@ -305,6 +305,7 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case PASS:
+                //TODO Please check status code first
                 pattern = Pattern.compile("(\\d+\\b)\\s([\\w-]+)\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
