@@ -8,7 +8,7 @@ public class OnlineUser {
     private Socket notiSocket;
     private SlaveThread slaveThread;
     private String token;
-    // TODO Add heartbeat socket
+    private String userName;
 
     public OnlineUser(SlaveThread slaveThread, Socket notiSocket) {
         this.notiSocket = notiSocket;
@@ -26,4 +26,6 @@ public class OnlineUser {
     public void setToken(String token) {
         this.token = token;
     }
+    public String getUserName() {return this.userName;}
+    public void setUserName(String userName) {this.userName = userName;}
 }
