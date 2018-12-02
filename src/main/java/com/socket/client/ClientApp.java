@@ -1,6 +1,9 @@
 package com.socket.client;
 
 import com.socket.totp.TotpClient;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,6 +14,7 @@ import java.util.Scanner;
 
 public class ClientApp {
 
+    private static final Logger logger = LogManager.getLogger(ClientApp.class);
     private static final String SERVER_NAME = "localhost";
     private static final int SERVER_SERVICE_PORT = 9091;
     private static final int SERVER_NOTIFICATION_PORT = 9092;
@@ -37,7 +41,7 @@ public class ClientApp {
             Socket socket = new Socket(SERVER_NAME, SERVER_SERVICE_PORT);
             clientTotp = new TotpClient(socket);
 
-            System.out.println(String.format("Client started, connecting to server %s:%d", SERVER_NAME, SERVER_SERVICE_PORT));
+            logger.log(Level.INFO, String.format("Client started, connecting to server %s:%d", SERVER_NAME, SERVER_SERVICE_PORT));
 
             Socket notiSocket = new Socket(SERVER_NAME, SERVER_NOTIFICATION_PORT);
             notiDis = new DataInputStream(notiSocket.getInputStream());
@@ -48,7 +52,6 @@ public class ClientApp {
         }
 
         try {
-
             new NotificationListenerThread().start();
 
             // Prompt for username and password
