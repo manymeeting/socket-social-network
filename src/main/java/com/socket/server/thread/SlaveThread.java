@@ -119,11 +119,12 @@ public class SlaveThread extends Thread {
                         serverTotp.respond(TotpCmd.DATA, TotpStatus.TRANSMISSION_FAILED);
                     }
                     // Save message and broadcast notification
+                    //TODO: fix bug of senderId, should not be null value.
                     Message newMessage = new Message(
                             req.get(TotpReqHeaderField.USER),
                             user.getUsername(),
                             req.get(TotpReqHeaderField.MSGBOX),
-                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                            new Date(),
                             req.get(TotpReqHeaderField.MESSAGE)
                     );
                     receiveMessage(newMessage);
@@ -174,7 +175,7 @@ public class SlaveThread extends Thread {
             logger.log(Level.DEBUG, String.format("User %s is offline now.", user.getUsername()));
             server.removeOnlineUser(user.getToken());
             // Update last active timestamp
-            user.setLastActiveTimestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            user.setLastActiveTimestamp(new Date());
         }
     }
 

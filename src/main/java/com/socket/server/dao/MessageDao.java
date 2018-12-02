@@ -2,6 +2,7 @@ package com.socket.server.dao;
 
 import com.socket.server.entity.Message;
 
+import java.util.Date;
 import java.util.List;
 
 public class MessageDao {
@@ -25,7 +26,8 @@ public class MessageDao {
      * @param message
      */
     public void saveMessage(Message message) {
-        // TODO
+        dbManager.addMessageInfo(message.getToUserId(), message.getFromUesrId(),
+                message.getContent(), message.getTimeStamp());
     }
 
 
