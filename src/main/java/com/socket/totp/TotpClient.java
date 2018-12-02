@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 public class TotpClient extends TotpProtocol {
     private String token_id;
-    Timer timer;
 
     /**
      * Creates a TotpProtocol with client functionality
@@ -38,7 +37,6 @@ public class TotpClient extends TotpProtocol {
     public TotpClient(Socket socket, String token_id) {
         super(socket);
         this.token_id = token_id;
-        this.timer = new Timer();
     }
 
     /**

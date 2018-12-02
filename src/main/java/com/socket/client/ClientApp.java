@@ -124,7 +124,6 @@ public class ClientApp {
             }
 
         }
-        System.exit(0);
     }
 
     /**
