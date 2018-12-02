@@ -2,6 +2,7 @@ package com.socket.server.thread;
 
 import com.socket.server.ServerApp;
 import com.socket.server.entity.AppUser;
+import com.socket.server.entity.Message;
 import com.socket.server.entity.NotificationMessage;
 import com.socket.totp.TotpCmd;
 import com.socket.totp.TotpReqHeaderField;
@@ -13,6 +14,8 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 public class SlaveThread extends Thread {
@@ -67,13 +70,13 @@ public class SlaveThread extends Thread {
                             serverTotp.respond(TotpCmd.PASS, TotpStatus.SUCCESS, user.getToken());
                             // Update thread to be online
                             setOnlineStatus(OnlineStatus.ONLINE);
-                            sendMessage(user.getToken(), String.format("Welcome %s, you have %d unread messages.",
+                            sendNotification(user.getToken(), String.format("Welcome %s, you have %d unread messages.",
                                     user.getUsername(), user.getUnreadMessages().size()));
                             for (String unread : user.getUnreadMessages()) {
-                                sendMessage(user.getToken(), "[Unread] " + unread);
+                                sendNotification(user.getToken(), "[Unread] " + unread);
                             }
 
-                            sendMessage(NotificationMessage.EMPTY_TOKEN,
+                            sendNotification(NotificationMessage.EMPTY_TOKEN,
                                     String.format("User %s has been online now.", user.getUsername()));
                         }
                         else {
@@ -102,21 +105,29 @@ public class SlaveThread extends Thread {
                     System.out.println("Connection closed");
                     break;
                 }
-
+                // SEND
                 if(reqCommand.equals(TotpCmd.SEND.toString())) {
                     this.receivingDataStatus = ReceivingDataStatus.RECEIVING;
-                    serverTotp.respond(TotpCmd.SEND, TotpStatus.READY_LIST_RECEIVING);
+                    serverTotp.respond(TotpCmd.SEND, TotpStatus.READY_LIST_RECEIVING,
+                            req.get(TotpReqHeaderField.USER), req.get(TotpReqHeaderField.MSGBOX));
                     continue;
                 }
-
+                // DATA
                 if(reqCommand.equals(TotpCmd.DATA.toString())) {
                     if(!this.receivingDataStatus.equals(ReceivingDataStatus.RECEIVING)) {
                         serverTotp.respond(TotpCmd.DATA, TotpStatus.TRANSMISSION_FAILED);
                     }
-                    // Receive message and broadcast notification
-                    sendMessage(NotificationMessage.EMPTY_TOKEN, String.format("%s posted: %s",
+                    // Save message and broadcast notification
+                    Message newMessage = new Message(
+                            req.get(TotpReqHeaderField.USER),
+                            user.getUsername(),
+                            req.get(TotpReqHeaderField.MSGBOX),
+                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                            req.get(TotpReqHeaderField.MESSAGE)
+                    );
+                    receiveMessage(newMessage);
+                    sendNotification(NotificationMessage.EMPTY_TOKEN, String.format("%s posted: %s",
                             user.getUsername(), req.get(TotpReqHeaderField.MESSAGE)));
-
                     serverTotp.respond(TotpCmd.DATA, TotpStatus.TRANSFER_ACTION_COMPLETED);
                     continue;
                 }
@@ -142,8 +153,12 @@ public class SlaveThread extends Thread {
         }
     }
 
-    private void sendMessage(String token, String message) {
-        server.addMessage(new NotificationMessage(token, message));
+    private void sendNotification(String token, String messageStr) {
+        server.addNotification(new NotificationMessage(token, messageStr));
+    }
+
+    private void receiveMessage(Message message) {
+        server.addMessage(message);
     }
 
     public void setOnlineStatus(OnlineStatus onlineStatus) {

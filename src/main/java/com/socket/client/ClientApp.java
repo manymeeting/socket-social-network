@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class ClientApp {
@@ -24,6 +25,12 @@ public class ClientApp {
     private static boolean serverClosed = false;
 
 
+    /**
+     *
+     * The following function is designed that once the result of a previous command is displayed,
+     * the user can issue another command. However, notification can be displayed anytime.
+     *
+     * */
     public static void main(String[] args) {
         try {
             // Initialize socket
@@ -41,7 +48,7 @@ public class ClientApp {
         }
 
         try {
-            // new ResponseListenerThread().start();
+
             new NotificationListenerThread().start();
 
             // Prompt for username and password
@@ -61,13 +68,13 @@ public class ClientApp {
                 String command = params[0];
 
                 if(command.equals("send")) {
-                    if(params.length != 4) {
+                    if(params.length < 4) {
                         System.out.println("Error: Wrong parameter format.");
                         continue;
                     }
                     String toUserId = params[1];
                     String msgBoxId = params[2];
-                    String message = params[3];
+                    String message = String.join(" ", Arrays.copyOfRange(params, 3, params.length));
                     clientTotp.send(toUserId, msgBoxId, message);
                     continue;
                 }
@@ -95,22 +102,4 @@ public class ClientApp {
             }
         }
     }
-
-    /*
-    static class ResponseListenerThread extends Thread {
-
-        @Override
-        public void run() {
-            String responseLine;
-            try {
-                while ((responseLine = ClientApp.clientTotp.getDis().readUTF()) != null) {
-                    System.out.println(responseLine);
-                }
-                serverClosed = true;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    */
 }
