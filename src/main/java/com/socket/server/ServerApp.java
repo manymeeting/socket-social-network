@@ -1,7 +1,9 @@
 package com.socket.server;
 
+import com.socket.server.dao.MessageDao;
 import com.socket.server.dao.UserDao;
 import com.socket.server.entity.AppUser;
+import com.socket.server.entity.Message;
 import com.socket.server.entity.NotificationMessage;
 import com.socket.server.entity.OnlineUser;
 import com.socket.server.thread.SlaveThread;
@@ -23,6 +25,7 @@ public class ServerApp {
     public volatile Map<String, OnlineUser> onlineUsersMap;
     public volatile Queue<NotificationMessage> messagesToSendQueue;
     public static final UserDao USER_DAO = new UserDao();
+    public static final MessageDao MESSAGE_DAO = new MessageDao();
 
     public static void main(String[] args) {
         ServerApp app = new ServerApp();
@@ -62,12 +65,14 @@ public class ServerApp {
         }
     }
 
-
-    public void addMessage(NotificationMessage notificationMessage) {
+    public void addNotification(NotificationMessage notificationMessage) {
         if (notificationMessage != null) {
             messagesToSendQueue.offer(notificationMessage);
-            // TODO store message into database
         }
+    }
+
+    public void addMessage(Message message) {
+        MESSAGE_DAO.saveMessage(message);
     }
 
     public boolean validateToken(String token) {
@@ -90,7 +95,7 @@ public class ServerApp {
         if (onlineUsersMap.containsKey(token)) {
             onlineUsersMap.remove(token);
             String message = String.format("User %s has been offline.", token);
-            addMessage(new NotificationMessage(NotificationMessage.EMPTY_TOKEN, message));
+            addNotification(new NotificationMessage(NotificationMessage.EMPTY_TOKEN, message));
         }
     }
 
