@@ -9,7 +9,7 @@ public class AppUser {
     private String token;
     private String username;
     private String password;
-    private String lastActiveTimestamp;
+    private Date lastActiveTimestamp;
     private List<String> unreadMessages;
     private Date lastOfflineTime;
 
@@ -19,10 +19,10 @@ public class AppUser {
         token = UUID.randomUUID().toString();
     }
 
-    public String getLastActiveTimestamp() {
+    public Date getLastActiveTimestamp() {
         return lastActiveTimestamp;
     }
-    public void setLastActiveTimestamp(String lastActiveTimestamp) {
+    public void setLastActiveTimestamp(Date lastActiveTimestamp) {
         this.lastActiveTimestamp = lastActiveTimestamp;
     }
 

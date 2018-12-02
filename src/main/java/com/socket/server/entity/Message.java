@@ -1,14 +1,16 @@
 package com.socket.server.entity;
 
+import java.util.Date;
+
 public class Message {
 
     private String toUserId;
     private String fromUesrId;
     private String boxId;
-    private String timeStamp;
+    private Date timeStamp;
     private String content;
 
-    public Message(String toUserId, String fromUesrId, String boxId, String timeStamp, String content) {
+    public Message(String toUserId, String fromUesrId, String boxId, Date timeStamp, String content) {
         this.boxId = boxId;
         this.toUserId = toUserId;
         this.fromUesrId = fromUesrId;
@@ -42,11 +44,11 @@ public class Message {
         this.boxId = boxId;
     }
 
-    public String getTimeStamp() {
+    public Date getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(String timeStamp) {
+    public void setTimeStamp(Date timeStamp) {
         this.timeStamp = timeStamp;
     }
 
