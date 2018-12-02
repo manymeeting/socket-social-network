@@ -78,6 +78,10 @@ public class ServerApp {
         MESSAGE_DAO.saveMessage(message);
     }
 
+    public void updateLastActiveTime(String username) {
+        USER_DAO.updateLastActiveTime(username);
+    }
+
     public boolean validateToken(String token) {
         return token != null && onlineUsersMap.containsKey(token);
     }

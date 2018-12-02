@@ -175,6 +175,7 @@ public class SlaveThread extends Thread {
             logger.log(Level.DEBUG, String.format("User %s is offline now.", user.getUsername()));
             server.removeOnlineUser(user.getToken());
             // Update last active timestamp
+            server.updateLastActiveTime(user.getUsername());
             user.setLastActiveTimestamp(new Date());
         }
     }
