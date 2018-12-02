@@ -14,8 +14,12 @@ public class UserDao {
         this.dbManager = new MongoDBManager();
     }
 
-    private List<String> fetchUnreadMessage(Date timeStamp) {
-        return dbManager.getUnreadMsg(timeStamp);
+    private List<String> fetchUnreadMessage(String username) {
+        return dbManager.getUnreadMsg(username);
+    }
+
+    public void updateLastActiveTime(String username) {
+        dbManager.updateUserLastActiveTime(username, new Date());
     }
 
     public AppUser validate(String username, String password) {
@@ -34,7 +38,7 @@ public class UserDao {
 
     private AppUser getUser(String username, String password) {
         AppUser user = new AppUser(username, password);
-        user.setUnreadMessages(fetchUnreadMessage(user.getLastActiveTimestamp()));
+        user.setUnreadMessages(fetchUnreadMessage(username));
         return user;
     }
 }
