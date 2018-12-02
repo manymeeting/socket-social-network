@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServerApp {
 
-    static final Logger logger = LogManager.getLogger(ServerApp.class);
+    private static final Logger logger = LogManager.getLogger(ServerApp.class);
     private ServerSocket serverSocket = null;
     private ServerSocket serverNotiSocket = null;
     private static final int DEFAULT_PORT = 9091;
@@ -29,16 +29,14 @@ public class ServerApp {
     public static final UserDao USER_DAO = new UserDao();
 
     public static void main(String[] args) {
-        logger.log(Level.INFO, "Initializing server...");
         ServerApp app = new ServerApp();
         app.start();
     }
 
     private void start() {
-        logger.log(Level.INFO, "Starting server...");
         try {
             serverSocket = new ServerSocket(DEFAULT_PORT);
-            System.out.println("Server started, listening on " + DEFAULT_PORT);
+            logger.log(Level.INFO, "Server started, listening on " + DEFAULT_PORT);
             serverNotiSocket = new ServerSocket(NOTIFICATION_PORT);
             slaveThreadSet = new HashSet<>();
             onlineUsersMap = new HashMap<>();
@@ -46,7 +44,6 @@ public class ServerApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         NotificationThread notificationThread = new NotificationThread(this);
         notificationThread.start();

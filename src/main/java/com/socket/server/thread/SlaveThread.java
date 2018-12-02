@@ -7,6 +7,9 @@ import com.socket.totp.TotpCmd;
 import com.socket.totp.TotpReqHeaderField;
 import com.socket.totp.TotpServer;
 import com.socket.totp.TotpStatus;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -17,6 +20,7 @@ import java.util.Map;
 
 public class SlaveThread extends Thread {
 
+    private static final Logger logger = LogManager.getLogger(SlaveThread.class);
     private final ServerApp server;
     private Socket clientSocket;
     private Socket notiSocket;
@@ -97,9 +101,7 @@ public class SlaveThread extends Thread {
                 // Handle other commands
                 if(reqCommand.equals(TotpCmd.GBYE.toString())) {
                     setOnlineStatus(OnlineStatus.OFFLINE);
-                    System.out.println("Closing this connection.");
                     this.shutdown();
-                    System.out.println("Connection closed");
                     break;
                 }
 
@@ -121,12 +123,10 @@ public class SlaveThread extends Thread {
                     continue;
                 }
             }
-
-
         } catch (EOFException e) {
             // Client became offline, close socket and IO streams
             this.shutdown();
-            System.out.println(String.format("%s closed", user.getUsername()));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -134,8 +134,10 @@ public class SlaveThread extends Thread {
 
     private void shutdown() {
         try {
+            logger.log(Level.DEBUG, String.format("%s is closing connection", user.getUsername()));
             serverTotp.close();
             clientSocket.close();
+            logger.log(Level.DEBUG, String.format("%s closed connection", user.getUsername()));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -150,8 +152,10 @@ public class SlaveThread extends Thread {
         this.onlineStatus = onlineStatus;
 
         if (onlineStatus == OnlineStatus.ONLINE) {
+            logger.log(Level.DEBUG, String.format("User %s is online now.", user.getUsername()));
             server.addOnlineUser(user.getToken(), this, this.notiSocket);
         } else {
+            logger.log(Level.DEBUG, String.format("User %s is offline now.", user.getUsername()));
             server.removeOnlineUser(user.getToken());
 
             try {
