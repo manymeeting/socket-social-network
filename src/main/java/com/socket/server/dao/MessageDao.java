@@ -2,7 +2,6 @@ package com.socket.server.dao;
 
 import com.socket.server.entity.Message;
 
-import java.util.Date;
 import java.util.List;
 
 public class MessageDao {
@@ -17,8 +16,7 @@ public class MessageDao {
      * @return List<Message>
      */
     public List<Message> getMessageOnUser(String userId) {
-        // TODO
-        return null;
+        return dbManager.getMessageByUserId(userId);
     }
 
     /**

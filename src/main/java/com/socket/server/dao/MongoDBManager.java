@@ -5,29 +5,29 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.socket.server.entity.Message;
 import org.bson.Document;
-import java.text.DateFormat;
+
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
 /**
-    MongoDB admin info:
-    username: admin
-    password: pwd123
-    ----------------------
-    MongoDB "user" Collection:
-    username: "user1"
-    password: "123"
-
-    username: "user2"
-    password: "123"
-
-    username: "user3"
-    password: "123"
+ * MongoDB admin info:
+ * username: admin
+ * password: pwd123
+ * ----------------------
+ * MongoDB "user" Collection:
+ * username: "user1"
+ * password: "123"
+ * <p>
+ * username: "user2"
+ * password: "123"
+ * <p>
+ * username: "user3"
+ * password: "123"
  */
 public class MongoDBManager {
 
@@ -52,7 +52,7 @@ public class MongoDBManager {
         MongoCollection userGroup = db.getCollection("user");
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("username", userName);
-        List<Document> docs = (List<Document>)userGroup.find(whereQuery).into(new ArrayList<>());
+        List<Document> docs = (List<Document>) userGroup.find(whereQuery).into(new ArrayList<>());
 
         if (docs == null) return false;
         for (Document doc : docs) {
@@ -65,6 +65,7 @@ public class MongoDBManager {
 
     /**
      * Update user last active timeStamp for fetch unread Msg on next time.
+     *
      * @param username
      * @param timeStamp
      * @return
@@ -81,7 +82,7 @@ public class MongoDBManager {
     public Date getUserLastActiveTime(String username) {
         MongoCollection userGroup = db.getCollection("user");
         BasicDBObject getQuery = new BasicDBObject().append("username", username);
-        List<Document> docs = (List<Document>)userGroup.find(getQuery).into(new ArrayList<>());
+        List<Document> docs = (List<Document>) userGroup.find(getQuery).into(new ArrayList<>());
         if (docs == null || docs.isEmpty() || docs.size() > 1) {
             return null;
         }
@@ -103,6 +104,26 @@ public class MongoDBManager {
         return true;
     }
 
+    public List<Message> getMessageByUserId(String userId) {
+        MongoCollection messageCollection = db.getCollection("message");
+        BasicDBObject query = new BasicDBObject();
+        query.put("to", userId);
+        List<Document> documents = (List<Document>) messageCollection.find(query).into(new ArrayList<>());
+        List<Message> messages = new ArrayList<>();
+        if(documents.size() > 0){
+            for (Document doc : documents) {
+                messages.add(new Message(
+                        doc.getString("to"),
+                        doc.getString("from"),
+                        doc.getString("wall"),
+                        doc.getDate("timeStamp"),
+                        doc.getString("message")
+                        ));
+            }
+        }
+        return messages;
+    }
+
     public List<String> getUnreadMsg(String username) {
         Date timeStamp = getUserLastActiveTime(username);
         if (timeStamp == null) {
@@ -111,7 +132,7 @@ public class MongoDBManager {
         MongoCollection msgGroup = this.db.getCollection("message");
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("timeStamp", new BasicDBObject("$gte", timeStamp));
-        List<Document> docs = (List<Document>)msgGroup.find(whereQuery).into(new ArrayList<>());
+        List<Document> docs = (List<Document>) msgGroup.find(whereQuery).into(new ArrayList<>());
         System.out.println(docs.size());
         List<String> result = new ArrayList<>();
         for (Document doc : docs) {
@@ -144,4 +165,6 @@ public class MongoDBManager {
         //System.out.println(db.getUserLastActiveTime("user2"));
 
     }
+
+
 }
