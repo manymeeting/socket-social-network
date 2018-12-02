@@ -195,6 +195,7 @@ public class TotpClient extends TotpProtocol {
         if (totpContent.status != TotpStatus.SUCCESS) {
             setError(totpContent.status.getReasonPhrase());
         }
+        super.close(); // Close IO streams
         return (String) totpContent.content;
     }
 
@@ -216,7 +217,8 @@ public class TotpClient extends TotpProtocol {
                 req = "HELO\r\n";
                 break;
             case PASS:
-                req = String.format("PASS %s %s\r\n", args[0], args[1]);
+                String encrypted = AES.encrypt((String) args[1], AESKey);
+                req = String.format("PASS %s %s\r\n", args[0], encrypted);
                 break;
             case SEND:
                 req = String.format("SEND %s:%s\r\n", args[0], args[1]);
@@ -304,7 +306,7 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case PASS:
-                pattern = Pattern.compile("(\\d+\\b)\\s(\\w+)\r\n");
+                pattern = Pattern.compile("(\\d+\\b)\\s([\\w-]+)\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
                     totpContent.status = TotpStatus.valueOf(Integer.valueOf(matcher.group(1)));
@@ -407,5 +409,9 @@ public class TotpClient extends TotpProtocol {
     protected void write(String msg) throws IOException {
         if (!token_id.equals("")) msg = encapToken(msg);
         super.write(msg);
+    }
+
+    public void close() throws IOException{
+        super.close();
     }
 }

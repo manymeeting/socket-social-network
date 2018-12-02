@@ -1,5 +1,7 @@
 package com.socket.client;
 
+import com.socket.totp.TotpClient;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,43 +15,67 @@ public class ClientApp {
     private static final int SERVER_NOTIFICATION_PORT = 9092;
 
     private static Socket clientSocket = null;
+    private static TotpClient clientTotp = null;
 
     private static Scanner scanner = null;
-    private static DataInputStream dis = null;
-    private static DataOutputStream dos = null;
     private static DataInputStream notiDis = null;
     private static DataOutputStream notiDos = null;
 
-    private static boolean closed = false;
+    private static boolean serverClosed = false;
 
 
     public static void main(String[] args) {
         try {
+            // Initialize socket
             Socket socket = new Socket(SERVER_NAME, SERVER_SERVICE_PORT);
+            clientTotp = new TotpClient(socket);
+
             System.out.println(String.format("Client started, connecting to server %s:%d", SERVER_NAME, SERVER_SERVICE_PORT));
-            dis = new DataInputStream(socket.getInputStream());
-            dos = new DataOutputStream(socket.getOutputStream());
 
             Socket notiSocket = new Socket(SERVER_NAME, SERVER_NOTIFICATION_PORT);
             notiDis = new DataInputStream(notiSocket.getInputStream());
             notiDos = new DataOutputStream(notiSocket.getOutputStream());
-
             scanner = new Scanner(System.in);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            new ResponseListenerThread().start();
+            // new ResponseListenerThread().start();
             new NotificationListenerThread().start();
 
-            while (!closed) {
-                dos.writeUTF(scanner.nextLine().trim());
+            // Prompt for username and password
+            System.out.println("Please input username: ");
+            String username = scanner.nextLine().trim();
+            System.out.println("Please input password: ");
+            String password = scanner.nextLine().trim();
+            String token = clientTotp.login(username, password);
+            System.out.println("Token: " + token);
+
+            while (!serverClosed) {
+                String[] params = scanner.nextLine().trim().split(" ");
+                if(params.length < 1) {
+                    System.out.println("Error: Invalid command.");
+                    continue;
+                }
+                String command = params[0];
+
+                if(command.equals("send")) {
+                    if(params.length != 4) {
+                        System.out.println("Error: Wrong parameter format.");
+                        continue;
+                    }
+                    String toUserId = params[1];
+                    String msgBoxId = params[2];
+                    String message = params[3];
+                    clientTotp.send(toUserId, msgBoxId, message);
+                    continue;
+                }
             }
-            dos.close();
-            dis.close();
+
             notiDis.close();
             notiDos.close();
+            clientTotp.close();
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,21 +96,21 @@ public class ClientApp {
         }
     }
 
+    /*
     static class ResponseListenerThread extends Thread {
 
         @Override
         public void run() {
             String responseLine;
             try {
-                while ((responseLine = dis.readUTF()) != null) {
+                while ((responseLine = ClientApp.clientTotp.getDis().readUTF()) != null) {
                     System.out.println(responseLine);
-                    if ("exit".equals(responseLine))
-                        break;
                 }
-                closed = true;
+                serverClosed = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+    */
 }

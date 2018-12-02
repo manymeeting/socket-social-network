@@ -76,15 +76,14 @@ public class ServerApp {
         }
     }
 
-    public AppUser validate(String readbuf) {
-        if (readbuf != null) {
-            String[] strings = readbuf.split(" ");
-            if (strings.length == 2) {
-                String username = strings[0];
-                String password = strings[1];
-                AppUser user = USER_DAO.validate(username, password);
-                return user;
-            }
+    public boolean validateToken(String token) {
+        return token != null && onlineUsersMap.containsKey(token);
+    }
+
+    public AppUser userLogin(String username, String password) {
+        if (username != null && password != null) {
+            AppUser user = USER_DAO.validate(username, password);
+            return user;
         }
         return null;
     }
