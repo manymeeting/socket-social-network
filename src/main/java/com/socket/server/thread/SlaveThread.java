@@ -12,13 +12,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Date;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -63,10 +59,12 @@ public class SlaveThread extends Thread {
                 // Check if token exists
                 if(reqToken == null || reqToken.equals("")) {
                     // No token, ok for PASS and HELO, error for all other commands
+                    // HELO
                     if(reqCommand.equals(TotpCmd.HELO.toString())) {
                         serverTotp.respond(TotpCmd.HELO, TotpStatus.AUTHENTICATION_REQUIRED);
                         continue;
                     }
+                    // PASS
                     else if(reqCommand.equals(TotpCmd.PASS.toString())) {
                         String username = req.get(TotpReqHeaderField.USER);
                         String password = req.get(TotpReqHeaderField.PASSWORD);
@@ -105,7 +103,10 @@ public class SlaveThread extends Thread {
                 }
 
                 // Handle other commands
+                // GBYE
                 if(reqCommand.equals(TotpCmd.GBYE.toString())) {
+                    logger.log(Level.DEBUG, String.format("%s is closing connection", user.getUsername()));
+                    serverTotp.respond(TotpCmd.GBYE, TotpStatus.SUCCESS, user.getUsername());
                     setOnlineStatus(OnlineStatus.OFFLINE);
                     break;
                 }
