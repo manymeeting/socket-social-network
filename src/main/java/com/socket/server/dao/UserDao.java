@@ -14,8 +14,8 @@ public class UserDao {
         this.dbManager = new MongoDBManager();
     }
 
-    // TODO
     private List<String> fetchUnreadMessage() {
+
         return new ArrayList<>();
     }
 
@@ -32,11 +32,12 @@ public class UserDao {
         return dbManager.isValidUser(userName, passWord);
     }
 
-    public boolean addMsgToDB(String msg, Date timeStamp) {
+    public boolean addMsgToDB(String sender, String receiver, String msg, Date timeStamp) {
         if (msg == null || timeStamp == null) return false;
-        dbManager.addMessageInfo(msg, timeStamp);
+        dbManager.addMessageInfo(sender, receiver, msg, timeStamp);
         return true;
     }
+
 
     private AppUser getUser(String username, String password) {
         AppUser user = new AppUser(username, password);
