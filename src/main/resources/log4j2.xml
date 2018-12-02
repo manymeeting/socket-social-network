@@ -3,7 +3,7 @@
                strict="true" schema="Log4J-V2.0.xsd">
     <Appenders>
         <NoSql name="databaseAppender">
-            <MongoDb databaseName="cmpe207" collectionName="cmpe207" server="ds243963.mlab.com" port="43963" username="admin" password="pwd123" />
+            <MongoDb databaseName="cmpe207" collectionName="applog" server="ds243963.mlab.com" port="43963" username="admin" password="pwd123" />
         </NoSql>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - ==>[%msg]%n"/>
