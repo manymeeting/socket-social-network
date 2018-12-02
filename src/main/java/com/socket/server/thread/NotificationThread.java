@@ -3,14 +3,18 @@ package com.socket.server.thread;
 import com.socket.server.ServerApp;
 import com.socket.server.entity.NotificationMessage;
 import com.socket.server.entity.OnlineUser;
+import com.socket.totp.TotpServer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NotificationThread extends Thread {
 
     private final ServerApp server;
+    private static final Logger logger = LogManager.getLogger(NotificationThread.class);
 
     public NotificationThread(ServerApp serverApp) {
         server = serverApp;
@@ -26,7 +30,7 @@ public class NotificationThread extends Thread {
                 if(message.getToken().equals(NotificationMessage.EMPTY_TOKEN)) {
                     for (OnlineUser onlineUser : server.onlineUsersMap.values()) {
                         try {
-                            sendNotification(message.getMessage(), onlineUser.getNotiSocket());
+                            sendNotification(message.getMessage(), onlineUser);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -35,8 +39,8 @@ public class NotificationThread extends Thread {
                 // One-to-one notification
                 else if (server.onlineUsersMap.containsKey(message.getToken())) {
                     try {
-                        OnlineUser user = server.onlineUsersMap.get(message.getToken());
-                        sendNotification(message.getMessage(), user.getNotiSocket());
+                        OnlineUser onlineUser = server.onlineUsersMap.get(message.getToken());
+                        sendNotification(message.getMessage(), onlineUser);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -50,11 +54,13 @@ public class NotificationThread extends Thread {
         }
     }
 
-    public void sendNotification(String notificationMsg, Socket clientNotiSocket) throws IOException {
-        // Check if client notification socket has been initialized
-        if(clientNotiSocket == null) return;
-
-        DataOutputStream dos = new DataOutputStream(clientNotiSocket.getOutputStream());
-        dos.writeUTF(notificationMsg);
+    public void sendNotification(String notificationMsg, OnlineUser onlineUser) throws IOException {
+        TotpServer notiTotp = onlineUser.getNotiTotp();
+        List<String> notiMsgs = new ArrayList<>();
+        notiMsgs.add(notificationMsg);
+        notiTotp.push(notiMsgs);
+        if(notiTotp.hasError()) {
+            logger.error(notiTotp.getErrorMsg());
+        }
     }
 }

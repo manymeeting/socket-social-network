@@ -48,6 +48,11 @@ public class SlaveThread extends Thread {
             while(true) {
                 // Block for incoming requests from client
                 Map<TotpReqHeaderField, String> req = serverTotp.receiveReq();
+                // Check TOTP error
+                if(serverTotp.hasError()) {
+                    logger.error(serverTotp.getErrorMsg());
+                    continue;
+                }
 
                 String reqToken = req.get(TotpReqHeaderField.TOKEN_ID);
                 String reqCommand = req.get(TotpReqHeaderField.COMMAND);

@@ -1,12 +1,12 @@
 package com.socket.client;
 
 import com.socket.totp.TotpClient;
+import com.socket.totp.TotpCmd;
+import com.socket.totp.TotpStatus;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
@@ -23,10 +23,9 @@ public class ClientApp {
     private static Socket socket = null;
     private static Socket notiSocket = null;
     private static TotpClient clientTotp = null;
+    private static TotpClient notiTotp = null;
 
     private static Scanner scanner = null;
-    private static DataInputStream notiDis = null;
-    private static DataOutputStream notiDos = null;
 
     private static volatile boolean isTerminated = false;
     /**
@@ -44,8 +43,8 @@ public class ClientApp {
             logger.log(Level.INFO, String.format("Client started, connecting to server %s:%d", SERVER_NAME, SERVER_SERVICE_PORT));
 
             notiSocket = new Socket(SERVER_NAME, SERVER_NOTIFICATION_PORT);
-            notiDis = new DataInputStream(notiSocket.getInputStream());
-            notiDos = new DataOutputStream(notiSocket.getOutputStream());
+            notiTotp = new TotpClient(notiSocket);
+
             scanner = new Scanner(System.in);
         } catch (Exception e) {
             logger.error("Could not connect to server.");
@@ -81,7 +80,7 @@ public class ClientApp {
                     String msgBoxId = params[2];
                     String message = String.join(" ", Arrays.copyOfRange(params, 3, params.length));
                     clientTotp.send(toUserId, msgBoxId, message);
-                    checkTotpError();
+                    hasClientTotpError();
                     continue;
                 }
                 else if(command.equals("exit")) {
@@ -89,8 +88,8 @@ public class ClientApp {
                         System.out.println("Error: Wrong parameter format.");
                         continue;
                     }
-                    checkTotpError();
                     clientTotp.goodbye();
+                    hasClientTotpError();
                     break;
                 }
                 else if(command.equals("users")) {
@@ -99,7 +98,7 @@ public class ClientApp {
                         continue;
                     }
                     String[] allOnlineUsers = clientTotp.retrieveFriendList();
-                    if(!checkTotpError()) {
+                    if(hasClientTotpError()) {
                         continue;
                     }
                     for (String userName : allOnlineUsers) {
@@ -128,25 +127,23 @@ public class ClientApp {
 
     /**
      *
-     * @return false: If error exists, otherwise return true.
+     * @return true: If error exists, otherwise return false.
      *
      */
-    private static boolean checkTotpError() {
+    private static boolean hasClientTotpError() {
         if(clientTotp.hasError()) {
             logger.error(clientTotp.getErrorMsg());
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private static void shutdownAll() {
         try {
+            scanner.close();
             clientTotp.close();
             socket.close();
-            scanner.close();
-
-            notiDis.close();
-            notiDos.close();
+            notiTotp.close();
             notiSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -156,19 +153,31 @@ public class ClientApp {
     static class NotificationListenerThread extends Thread {
         @Override
         public void run() {
-            String notification;
             try {
-                while ((notification = notiDis.readUTF()) != null) {
-                    System.out.println(notification);
+                while (!isTerminated) {
+                    String[] notifications = (String[]) notiTotp.receiveReq();
+                    if(notiTotp.hasError()) {
+                        logger.error(notiTotp.getErrorMsg());
+                        notiTotp.respond(TotpCmd.PUSH, TotpStatus.TRANSMISSION_FAILED);
+                        continue;
+                    }
+                    // Respond Success
+                    notiTotp.respond(TotpCmd.PUSH, TotpStatus.TRANSFER_ACTION_COMPLETED);
+                    for (String notiStr : notifications) {
+                        System.out.println(notiStr);
+                    }
+
                 }
             } catch (EOFException e) {
-              logger.log(Level.INFO, "Notification thread shutdown due to server closed.");
+                logger.log(Level.INFO, "Notification thread terminated due to server closed.");
             } catch (IOException e) {
-                if(!isTerminated) {
+                if(isTerminated) {
+                    logger.log(Level.INFO, "Notification thread terminated.");
+                }
+                else {
                     // Print out stack if not properly terminated by main thread
                     e.printStackTrace();
                 }
-
             }
         }
     }

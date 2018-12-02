@@ -108,14 +108,10 @@ public class ServerApp {
 
     public void removeOnlineUser(String token) {
         if (onlineUsersMap.containsKey(token)) {
-            // Close notification socket
-            try {
-                onlineUsersMap.get(token).getNotiSocket().close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // Broadcast notification
+            onlineUsersMap.get(token).goOffLine();
             onlineUsersMap.remove(token);
+
+            // Broadcast notification
             String message = String.format("User %s has been offline.", token);
             addNotification(new NotificationMessage(NotificationMessage.EMPTY_TOKEN, message));
         }
