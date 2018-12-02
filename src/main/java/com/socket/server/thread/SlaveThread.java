@@ -44,6 +44,10 @@ public class SlaveThread extends Thread {
     public void run() {
         try {
 
+            // Variables for storing information in 2-step message sending
+            String receivingMsgToUserId = "";
+            String receivingMsgBoxId = "";
+
             while(true) {
                 // Block for incoming requests from client
                 Map<TotpReqHeaderField, String> req = serverTotp.receiveReq();
@@ -109,6 +113,8 @@ public class SlaveThread extends Thread {
                 // SEND
                 if(reqCommand.equals(TotpCmd.SEND.toString())) {
                     this.receivingDataStatus = ReceivingDataStatus.RECEIVING;
+                    receivingMsgBoxId = req.get(TotpReqHeaderField.MSGBOX);
+                    receivingMsgToUserId = req.get(TotpReqHeaderField.USER);
                     serverTotp.respond(TotpCmd.SEND, TotpStatus.READY_LIST_RECEIVING,
                             req.get(TotpReqHeaderField.USER), req.get(TotpReqHeaderField.MSGBOX));
                     continue;
@@ -119,11 +125,10 @@ public class SlaveThread extends Thread {
                         serverTotp.respond(TotpCmd.DATA, TotpStatus.TRANSMISSION_FAILED);
                     }
                     // Save message and broadcast notification
-                    //TODO: fix bug of senderId, should not be null value.
                     Message newMessage = new Message(
-                            req.get(TotpReqHeaderField.USER),
+                            receivingMsgToUserId,
                             user.getUsername(),
-                            req.get(TotpReqHeaderField.MSGBOX),
+                            receivingMsgBoxId,
                             new Date(),
                             req.get(TotpReqHeaderField.MESSAGE)
                     );
