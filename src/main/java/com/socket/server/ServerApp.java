@@ -17,6 +17,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 public class ServerApp {
 
@@ -94,8 +95,20 @@ public class ServerApp {
         return null;
     }
 
-    public void addOnlineUser(String token, SlaveThread slaveThread, Socket notiSocket) {
-        onlineUsersMap.put(token, new OnlineUser(slaveThread, notiSocket));
+    public void addOnlineUser(AppUser user, SlaveThread slaveThread, Socket notiSocket) {
+        OnlineUser onlineUser = new OnlineUser(slaveThread, notiSocket);
+        onlineUser.setToken(user.getToken());
+        onlineUser.setUserName(user.getUsername());
+        onlineUsersMap.put(user.getToken(), onlineUser);
+    }
+
+    public List<String> getOnlineUsers() {
+        return onlineUsersMap.values().stream().map(OnlineUser::getUserName).collect(Collectors.toList());
+    }
+
+    public int getSizeOfAllUsers() {
+        // TODO Implement a function in USER_DAO
+        return 0;
     }
 
     public void removeOnlineUser(String token) {

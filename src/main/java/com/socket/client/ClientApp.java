@@ -90,6 +90,17 @@ public class ClientApp {
                     clientTotp.goodbye();
                     break;
                 }
+                else if(command.equals("users")) {
+                    if(params.length != 1) {
+                        System.out.println("Error: Wrong parameter format.");
+                        continue;
+                    }
+                    String[] allOnlineUsers = clientTotp.retrieveFriendList();
+                    for (String userName : allOnlineUsers) {
+                        System.out.println(userName);
+                    }
+                    continue;
+                }
             }
         } catch (EOFException e) {
             // Server closed

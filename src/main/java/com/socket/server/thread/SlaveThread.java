@@ -16,6 +16,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public class SlaveThread extends Thread {
@@ -139,6 +140,15 @@ public class SlaveThread extends Thread {
                     serverTotp.respond(TotpCmd.DATA, TotpStatus.TRANSFER_ACTION_COMPLETED);
                     continue;
                 }
+
+                // FRND
+                if(reqCommand.equals(TotpCmd.FRND.toString())) {
+                    List<String> onlineUserNames = this.server.getOnlineUsers();
+                    int sizeOfAllUsers = this.server.getSizeOfAllUsers();
+                    serverTotp.respond(TotpCmd.FRND, TotpStatus.START_LIST_TRANSMISSION,
+                            onlineUserNames.size(), sizeOfAllUsers, onlineUserNames);
+                    continue;
+                }
             }
         } catch (EOFException e) {
             // Client became offline, update client status
@@ -176,7 +186,7 @@ public class SlaveThread extends Thread {
 
         if (onlineStatus == OnlineStatus.ONLINE) {
             logger.log(Level.DEBUG, String.format("User %s is online now.", user.getUsername()));
-            server.addOnlineUser(user.getToken(), this, this.notiSocket);
+            server.addOnlineUser(user, this, this.notiSocket);
         } else {
             logger.log(Level.DEBUG, String.format("User %s is offline now.", user.getUsername()));
             server.removeOnlineUser(user.getToken());
