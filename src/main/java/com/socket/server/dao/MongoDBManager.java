@@ -1,16 +1,17 @@
 package com.socket.server.dao;
 
-import com.mongodb.*;
-import com.mongodb.client.FindIterable;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
-
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

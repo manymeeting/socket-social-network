@@ -1,11 +1,16 @@
 package com.socket.server;
 
+import com.socket.server.dao.MessageDao;
 import com.socket.server.dao.UserDao;
 import com.socket.server.entity.AppUser;
+import com.socket.server.entity.Message;
 import com.socket.server.entity.NotificationMessage;
 import com.socket.server.entity.OnlineUser;
-import com.socket.server.thread.SlaveThread;
 import com.socket.server.thread.NotificationThread;
+import com.socket.server.thread.SlaveThread;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,6 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServerApp {
 
+    private static final Logger logger = LogManager.getLogger(ServerApp.class);
     private ServerSocket serverSocket = null;
     private ServerSocket serverNotiSocket = null;
     private static final int DEFAULT_PORT = 9091;
@@ -23,6 +29,7 @@ public class ServerApp {
     public volatile Map<String, OnlineUser> onlineUsersMap;
     public volatile Queue<NotificationMessage> messagesToSendQueue;
     public static final UserDao USER_DAO = new UserDao();
+    public static final MessageDao MESSAGE_DAO = new MessageDao();
 
     public static void main(String[] args) {
         ServerApp app = new ServerApp();
@@ -32,7 +39,7 @@ public class ServerApp {
     private void start() {
         try {
             serverSocket = new ServerSocket(DEFAULT_PORT);
-            System.out.println("Server started, listening on " + DEFAULT_PORT);
+            logger.log(Level.INFO, "Server started, listening on " + DEFAULT_PORT);
             serverNotiSocket = new ServerSocket(NOTIFICATION_PORT);
             slaveThreadSet = new HashSet<>();
             onlineUsersMap = new HashMap<>();
@@ -40,7 +47,6 @@ public class ServerApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         NotificationThread notificationThread = new NotificationThread(this);
         notificationThread.start();
@@ -62,26 +68,24 @@ public class ServerApp {
         }
     }
 
-
-    public void addMessage(NotificationMessage notificationMessage) {
+    public void addNotification(NotificationMessage notificationMessage) {
         if (notificationMessage != null) {
             messagesToSendQueue.offer(notificationMessage);
         }
     }
 
-    public void sendMsgToDB(String message, Date timeStamp) {
-            USER_DAO.addMsgToDB(message, timeStamp);
+    public void addMessage(Message message) {
+        MESSAGE_DAO.saveMessage(message);
     }
 
-    public AppUser validate(String readbuf) {
-        if (readbuf != null) {
-            String[] strings = readbuf.split(" ");
-            if (strings.length == 2) {
-                String username = strings[0];
-                String password = strings[1];
-                AppUser user = USER_DAO.validate(username, password);
-                return user;
-            }
+    public boolean validateToken(String token) {
+        return token != null && onlineUsersMap.containsKey(token);
+    }
+
+    public AppUser userLogin(String username, String password) {
+        if (username != null && password != null) {
+            AppUser user = USER_DAO.validate(username, password);
+            return user;
         }
         return null;
     }
@@ -94,7 +98,7 @@ public class ServerApp {
         if (onlineUsersMap.containsKey(token)) {
             onlineUsersMap.remove(token);
             String message = String.format("User %s has been offline.", token);
-            addMessage(new NotificationMessage(NotificationMessage.EMPTY_TOKEN, message));
+            addNotification(new NotificationMessage(NotificationMessage.EMPTY_TOKEN, message));
         }
     }
 
