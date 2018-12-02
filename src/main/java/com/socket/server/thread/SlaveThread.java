@@ -28,8 +28,6 @@ public class SlaveThread extends Thread {
     private Socket clientSocket;
     private Socket notiSocket;
     private TotpServer serverTotp;
-    private DataInputStream dis = null;
-    private DataOutputStream dos = null;
     private AppUser user = null;
     private volatile OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
     private volatile ReceivingDataStatus receivingDataStatus = ReceivingDataStatus.OFF;
@@ -104,7 +102,6 @@ public class SlaveThread extends Thread {
                 // Handle other commands
                 if(reqCommand.equals(TotpCmd.GBYE.toString())) {
                     setOnlineStatus(OnlineStatus.OFFLINE);
-                    this.shutdown();
                     break;
                 }
                 // SEND
@@ -135,20 +132,22 @@ public class SlaveThread extends Thread {
                 }
             }
         } catch (EOFException e) {
-            // Client became offline, close socket and IO streams
-            this.shutdown();
+            // Client became offline, update client status
+            logger.log(Level.DEBUG, String.format("%s is closing connection", user.getUsername()));
+            setOnlineStatus(OnlineStatus.OFFLINE);
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            this.shutdown();
         }
     }
 
     private void shutdown() {
         try {
-            logger.log(Level.DEBUG, String.format("%s is closing connection", user.getUsername()));
             serverTotp.close();
             clientSocket.close();
-            logger.log(Level.DEBUG, String.format("%s closed connection", user.getUsername()));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -172,17 +171,9 @@ public class SlaveThread extends Thread {
         } else {
             logger.log(Level.DEBUG, String.format("User %s is offline now.", user.getUsername()));
             server.removeOnlineUser(user.getToken());
-
-            try {
-                dos.writeUTF("exit");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            // Update last active timestamp
+            user.setLastActiveTimestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         }
-    }
-
-    public void send(String message) throws IOException {
-        dos.writeUTF(message);
     }
 
     enum OnlineStatus {
