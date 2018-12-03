@@ -136,7 +136,7 @@ public class MongoDBManager {
         System.out.println(docs.size());
         List<String> result = new ArrayList<>();
         for (Document doc : docs) {
-            result.add((String) doc.get("from") + " : " + (String) doc.get("message"));
+            result.add((String) doc.get("from") + " post to " + (String) doc.get("to") + " : " + (String) doc.get("message"));
         }
 
         return result;
