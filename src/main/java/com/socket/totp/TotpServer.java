@@ -137,11 +137,12 @@ public class TotpServer extends TotpProtocol {
             case HELO:
                 break;
             case PASS:
-                pattern = Pattern.compile("(\\w+\\b)\\s(\\w+)");
+                pattern = Pattern.compile("(\\w+\\b)\\s([\\s\\S]+)");
                 matcher = pattern.matcher(arg);
                 if (matcher.find()) {
                     String user = matcher.group(1);
-                    String password = matcher.group(2);
+                    String encrypted = matcher.group(2);
+                    String password = AES.decrypt(encrypted, AESKey);
                     map.put(TotpReqHeaderField.USER, user);
                     map.put(TotpReqHeaderField.PASSWORD, password);
                 } else {
@@ -224,7 +225,7 @@ public class TotpServer extends TotpProtocol {
 
     private String[] decapToken(String req) {
         String[] decapReq = new String[2];
-        Pattern pattern = Pattern.compile("^(\\w{" + tokenLen + "}\\b)\\s([\\s\\S]+)$");
+        Pattern pattern = Pattern.compile("^([\\w-]{" + tokenLen + "}\\b)\\s([\\s\\S]+)$");
         Matcher matcher = pattern.matcher(req);
         if (!matcher.matches()) {
             decapReq[0] = "";

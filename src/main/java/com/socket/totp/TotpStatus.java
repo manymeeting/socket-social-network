@@ -15,7 +15,7 @@ public enum TotpStatus {
     ERROR_PARAMETERS_ARGUMENTS(501, "Error In Parameters Or Arguments"),
     COMMAND_NOT_IMPLEMENTED(502, "Command Not Implemented"),
     TRANSMISSION_FAILED(530, "Transmission Failed"),
-    PERMISSION_FAILED(540, "Permission_FAILED"),
+    PERMISSION_DENIED(540, "Permission Denied"),
     AUTHENTICATION_REQUIRED(541, "Authentication Required");
 
     private final int value;

@@ -1,8 +1,13 @@
 package com.socket.totp;
 
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /* A connection class that support Team-One Transfer Protocol */
@@ -11,8 +16,8 @@ public abstract class TotpProtocol {
     private DataOutputStream dos;
     private String errorMsg;
     private boolean errOccured;
+    protected String AESKey = "Team1TransferProtocol!";
 
-    //TODO: Replace Socket to SSLSocket
     /**
      * Creates a TotpProtocol that handles the TOTP based information
      * exchanging using the specified underlying socket.
@@ -77,6 +82,14 @@ public abstract class TotpProtocol {
 
     public String getErrorMsg() {
         return this.errorMsg;
+    }
+
+    /**
+     * Set AES key for password encryption before transmitting
+     * @param key The key to encrypt user password
+     */
+    public void setAESKey(String key) {
+        AES.setKey(key);
     }
 
     protected void write(String msg) throws IOException {

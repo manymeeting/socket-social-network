@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 public class TotpClient extends TotpProtocol {
     private String token_id;
-    Timer timer;
 
     /**
      * Creates a TotpProtocol with client functionality
@@ -38,7 +37,6 @@ public class TotpClient extends TotpProtocol {
     public TotpClient(Socket socket, String token_id) {
         super(socket);
         this.token_id = token_id;
-        this.timer = new Timer();
     }
 
     /**
@@ -65,6 +63,10 @@ public class TotpClient extends TotpProtocol {
                 write(req);
                 resp = read();
                 totpContent = parseResp(TotpCmd.PASS, resp);
+                if (totpContent.status != TotpStatus.SUCCESS) {
+                    setError(totpContent.status.getReasonPhrase());
+                    return "";
+                }
             } else if (totpContent.status != TotpStatus.SUCCESS) {
                 setError(totpContent.status.getReasonPhrase());
                 return "";
@@ -166,16 +168,20 @@ public class TotpClient extends TotpProtocol {
      * Send a heart-beat to the server.
      * @throws IOException
      */
-    public void heartBeat() throws IOException {
+    public void heartBeat() {
         TotpContent totpContent;
         String req, resp;
         clearError();
-        req = contructReq(TotpCmd.HRBT);
-        write(req);
-        resp = read();
-        totpContent = parseResp(TotpCmd.HRBT, resp);
-        if (totpContent.status != TotpStatus.SUCCESS) {
-            setError(totpContent.status.getReasonPhrase());
+        try {
+            req = contructReq(TotpCmd.HRBT);
+            write(req);
+            resp = read();
+            totpContent = parseResp(TotpCmd.HRBT, resp);
+            if (totpContent.status != TotpStatus.SUCCESS) {
+                setError(totpContent.status.getReasonPhrase());
+            }
+        } catch (IOException e) {
+            setError(e.getMessage());
         }
     }
 
@@ -184,19 +190,24 @@ public class TotpClient extends TotpProtocol {
      * @return The closed user sent from the server
      * @throws IOException
      */
-    public String goodbye() throws IOException {
+    public String goodbye() {
         TotpContent totpContent;
         String req, resp;
         clearError();
-        req = contructReq(TotpCmd.GBYE);
-        write(req);
-        resp = read();
-        totpContent = parseResp(TotpCmd.GBYE, resp);
-        if (totpContent.status != TotpStatus.SUCCESS) {
-            setError(totpContent.status.getReasonPhrase());
+        try {
+            req = contructReq(TotpCmd.GBYE);
+            write(req);
+            resp = read();
+            totpContent = parseResp(TotpCmd.GBYE, resp);
+            if (totpContent.status != TotpStatus.SUCCESS) {
+                setError(totpContent.status.getReasonPhrase());
+            }
+            super.close(); // Close IO streams
+            return (String) totpContent.content;
+        } catch (IOException e) {
+            setError(e.getMessage());
+            return "";
         }
-        super.close(); // Close IO streams
-        return (String) totpContent.content;
     }
 
     /**
@@ -217,7 +228,8 @@ public class TotpClient extends TotpProtocol {
                 req = "HELO\r\n";
                 break;
             case PASS:
-                req = String.format("PASS %s %s\r\n", args[0], args[1]);
+                String encrypted = AES.encrypt((String) args[1], AESKey);
+                req = String.format("PASS %s %s\r\n", args[0], encrypted);
                 break;
             case SEND:
                 req = String.format("SEND %s:%s\r\n", args[0], args[1]);
@@ -305,11 +317,15 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case PASS:
-                pattern = Pattern.compile("(\\d+\\b)\\s(\\w+)\r\n");
+                pattern = Pattern.compile("(\\d+\\b)\\s([\\w-]+)?\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
                     totpContent.status = TotpStatus.valueOf(Integer.valueOf(matcher.group(1)));
-                    token_id = matcher.group(2);
+                    if (totpContent.status == TotpStatus.SUCCESS) {
+                        token_id = matcher.group(2);
+                    } else {
+                        token_id = "";
+                    }
                     totpContent.content = token_id;
                 } else {
                     setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
@@ -335,16 +351,19 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case RETR:
-                pattern = Pattern.compile("(\\d+)\\s(\\d+)\\s(\\d+)\r\n([\\s\\S]+)\r\n.\r\n");
+                pattern = Pattern.compile("(\\d+)\\s(\\d+)\\s(\\d+)\r\n([\\s\\S]+)?\r\n.\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
                     totpContent.status = TotpStatus.valueOf(Integer.valueOf(matcher.group(1)));
                     int numOfMsg = Integer.valueOf(matcher.group(2));
                     int totalSize = Integer.valueOf(matcher.group(3));
-                    String[] msgs = matcher.group(4).split("\r\n");
-                    for (String msg : msgs) totalSize -= msg.length();
-                    if (numOfMsg != msgs.length || totalSize != 0) {
-                        setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
+                    String[] msgs = {};
+                    if (numOfMsg > 0 && totalSize > 0) {
+                        msgs = matcher.group(4).split("\r\n");
+                        for (String msg : msgs) totalSize -= msg.length();
+                        if (numOfMsg != msgs.length || totalSize != 0) {
+                            setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
+                        }
                     }
                     totpContent.content = msgs;
                 } else {
