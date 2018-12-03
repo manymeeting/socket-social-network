@@ -70,7 +70,7 @@ public class ClientApp {
                 System.out.println("Token: " + token);
                 isLoginSucess = true;
             }
-
+            printHelp();
             while (scanner.hasNextLine()) {
                 String[] params = scanner.nextLine().trim().split(" ");
                 if(params.length < 1) {
@@ -130,6 +130,14 @@ public class ClientApp {
                     }
                     continue;
                 }
+                else if(command.equals("help")) {
+                    printHelp();
+                    continue;
+                }
+                else {
+                    System.out.println("Invalid command, type <help> for instruction");
+                    continue;
+                }
             }
         } catch (EOFException e) {
             // Server closed
@@ -174,6 +182,22 @@ public class ClientApp {
         }
     }
 
+    private static void printHelp() {
+        System.out.println(" ----------------------------------");
+        System.out.println("|                                  |");
+        System.out.println("|       TOTP Social Network        |");
+        System.out.println("|                                  |");
+        System.out.println("|          Instructions            |");
+        System.out.println("| 1. Send: send <User> <Box> <Msg> |");
+        System.out.println("| 2. Wall: wall <User>             |");
+        System.out.println("| 3. Users: users                  |");
+        System.out.println("| 4. Goodbye: exit                 |");
+        System.out.println("| 5. Instructions: help            |");
+        System.out.println("|                                  |");
+        System.out.println(" ----------------------------------");
+
+    }
+
     static class NotificationListenerThread extends Thread {
         @Override
         public void run() {
@@ -188,7 +212,7 @@ public class ClientApp {
                     // Respond Success
                     notiTotp.respond(TotpCmd.PUSH, TotpStatus.TRANSFER_ACTION_COMPLETED);
                     for (String notiStr : notifications) {
-                        System.out.println(notiStr);
+                        System.out.println("[NOTIFICATION]: " + notiStr);
                     }
 
                 }
