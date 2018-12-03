@@ -129,6 +129,11 @@ public class ClientApp {
                     if(hasClientTotpError()) {
                         continue;
                     }
+                    // Check if there's no messages
+                    if(wallMessages.length == 0) {
+                        System.out.println("<No messages>");
+                        continue;
+                    }
                     for (String wallMsg : wallMessages) {
                         System.out.println(wallMsg);
                     }
