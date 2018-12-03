@@ -10,6 +10,7 @@ import com.socket.server.entity.Message;
 import org.bson.Document;
 
 import java.io.FileInputStream;
+import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,10 +72,12 @@ public class MongoDBManager {
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("username", userName);
         List<Document> docs = (List<Document>) userGroup.find(whereQuery).into(new ArrayList<>());
-
         if (docs == null) return false;
+        String encryptedPwd = MongoDBManager.encryptPassword(pwd);
+        if (encryptedPwd == null)
+            return false;
         for (Document doc : docs) {
-            if (doc.get("password").equals(pwd)) {
+            if (doc.get("password").equals(encryptedPwd)) {
                 return true;
             }
         }
@@ -160,11 +163,21 @@ public class MongoDBManager {
         return result;
     }
 
+    public static String encryptPassword(String password) {
+        int strlen = password.length();
+        int hash = 7;
+        for (int i = 0; i < strlen; i++) {
+            hash = hash*31 + password.charAt(i);
+        }
+        return String.valueOf(hash);
+    }
+
     /**
      * For functional test only
      */
     public static void main(String[] args) throws ParseException {
         MongoDBManager db = new MongoDBManager();
+        System.out.println(MongoDBManager.encryptPassword("123"));
         //testing when user1 login successfully
         //System.out.println(db.isValidUser("user1", "123"));
         //testing when user2 login unsuccessfully
