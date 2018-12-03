@@ -92,13 +92,12 @@ public class SlaveThread extends Thread {
                         }
                         else {
                             // Login validation failed
-                            serverTotp.respond(TotpCmd.PASS, TotpStatus.PERMISSION_FAILED,
-                                    TotpStatus.PERMISSION_FAILED.getReasonPhrase());
+                            serverTotp.respond(TotpCmd.PASS, TotpStatus.PERMISSION_DENIED, "");
                         }
                         continue;
                     }
                     else {
-                        serverTotp.respond(TotpCmd.ERROR, TotpStatus.PERMISSION_FAILED);
+                        serverTotp.respond(TotpCmd.ERROR, TotpStatus.PERMISSION_DENIED);
                         continue;
                     }
                 }

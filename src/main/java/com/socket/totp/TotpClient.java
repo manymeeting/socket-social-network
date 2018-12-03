@@ -63,6 +63,10 @@ public class TotpClient extends TotpProtocol {
                 write(req);
                 resp = read();
                 totpContent = parseResp(TotpCmd.PASS, resp);
+                if (totpContent.status != TotpStatus.SUCCESS) {
+                    setError(totpContent.status.getReasonPhrase());
+                    return "";
+                }
             } else if (totpContent.status != TotpStatus.SUCCESS) {
                 setError(totpContent.status.getReasonPhrase());
                 return "";
@@ -305,12 +309,15 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case PASS:
-                //TODO Please check status code first
-                pattern = Pattern.compile("(\\d+\\b)\\s([\\w-]+)\r\n");
+                pattern = Pattern.compile("(\\d+\\b)\\s([\\w-]+)?\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
                     totpContent.status = TotpStatus.valueOf(Integer.valueOf(matcher.group(1)));
-                    token_id = matcher.group(2);
+                    if (totpContent.status == TotpStatus.SUCCESS) {
+                        token_id = matcher.group(2);
+                    } else {
+                        token_id = "";
+                    }
                     totpContent.content = token_id;
                 } else {
                     setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
