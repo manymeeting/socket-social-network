@@ -18,8 +18,6 @@ public class Message {
         this.content = content;
     }
 
-    //TODO Add other functions
-
     public String getToUserId() {
         return toUserId;
     }

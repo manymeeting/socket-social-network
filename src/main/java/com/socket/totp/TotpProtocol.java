@@ -18,7 +18,6 @@ public abstract class TotpProtocol {
     private boolean errOccured;
     protected String AESKey = "Team1TransferProtocol!";
 
-    //TODO: Replace Socket to SSLSocket
     /**
      * Creates a TotpProtocol that handles the TOTP based information
      * exchanging using the specified underlying socket.

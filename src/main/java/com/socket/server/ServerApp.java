@@ -102,8 +102,16 @@ public class ServerApp {
         onlineUsersMap.put(user.getToken(), onlineUser);
     }
 
+    /**
+     * A background is that all usernames are unique and each user can login multiple times.
+     * Therefore, we simply remove duplicate names from the online users list and
+     * return the list as result.
+     *
+     * @return List of distinct usernames
+     */
     public List<String> getOnlineUsers() {
-        return onlineUsersMap.values().stream().map(OnlineUser::getUserName).collect(Collectors.toList());
+        return onlineUsersMap.values().stream()
+                .map(OnlineUser::getUserName).distinct().collect(Collectors.toList());
     }
 
     public List<String> getMessagesOnUser(String userId) {
