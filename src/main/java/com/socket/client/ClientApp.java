@@ -60,6 +60,10 @@ public class ClientApp {
             while(!isLoginSucess) {
                 System.out.println("Please input username: ");
                 String username = scanner.nextLine().trim();
+                if(username.equals("")) {
+                    System.out.println("Username cannot be empty.");
+                    continue;
+                }
                 System.out.println("Please input password: ");
                 String password = scanner.nextLine().trim();
                 String token = clientTotp.login(username, password);
