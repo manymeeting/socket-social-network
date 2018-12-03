@@ -336,16 +336,19 @@ public class TotpClient extends TotpProtocol {
                 }
                 break;
             case RETR:
-                pattern = Pattern.compile("(\\d+)\\s(\\d+)\\s(\\d+)\r\n([\\s\\S]+)\r\n.\r\n");
+                pattern = Pattern.compile("(\\d+)\\s(\\d+)\\s(\\d+)\r\n([\\s\\S]+)?\r\n.\r\n");
                 matcher = pattern.matcher(resp);
                 if (matcher.find()) {
                     totpContent.status = TotpStatus.valueOf(Integer.valueOf(matcher.group(1)));
                     int numOfMsg = Integer.valueOf(matcher.group(2));
                     int totalSize = Integer.valueOf(matcher.group(3));
-                    String[] msgs = matcher.group(4).split("\r\n");
-                    for (String msg : msgs) totalSize -= msg.length();
-                    if (numOfMsg != msgs.length || totalSize != 0) {
-                        setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
+                    String[] msgs = {};
+                    if (numOfMsg > 0 && totalSize > 0) {
+                        msgs = matcher.group(4).split("\r\n");
+                        for (String msg : msgs) totalSize -= msg.length();
+                        if (numOfMsg != msgs.length || totalSize != 0) {
+                            setError(TotpStatus.ERROR_PARAMETERS_ARGUMENTS.getReasonPhrase());
+                        }
                     }
                     totpContent.content = msgs;
                 } else {
