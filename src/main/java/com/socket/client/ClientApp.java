@@ -114,6 +114,22 @@ public class ClientApp {
                     }
                     continue;
                 }
+                else if(command.equals("wall")) {
+                    if(params.length < 2) {
+                        System.out.println("Error: Wrong parameter format.");
+                        continue;
+                    }
+                    String userId = params[1];
+                    String boxId = params.length >= 3 ? params[2] : "wall";
+                    String wallMessages[] = clientTotp.retrieve(userId, boxId);
+                    if(hasClientTotpError()) {
+                        continue;
+                    }
+                    for (String wallMsg : wallMessages) {
+                        System.out.println(wallMsg);
+                    }
+                    continue;
+                }
             }
         } catch (EOFException e) {
             // Server closed

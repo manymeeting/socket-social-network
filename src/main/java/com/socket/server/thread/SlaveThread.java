@@ -156,6 +156,16 @@ public class SlaveThread extends Thread {
                             onlineUserNames.size(), totalSize, onlineUserNames);
                     continue;
                 }
+
+                // RETR
+                if(reqCommand.equals(TotpCmd.RETR.toString())) {
+                    List<String> messages = this.server.getMessagesOnUser(req.get(TotpReqHeaderField.USER));
+                    int totalSize = 0;
+                    for (String str : messages) totalSize += str.length();
+                    serverTotp.respond(TotpCmd.RETR, TotpStatus.START_LIST_TRANSMISSION,
+                            messages.size(), totalSize, messages);
+                    continue;
+                }
             }
         } catch (EOFException e) {
             // Client became offline, update client status

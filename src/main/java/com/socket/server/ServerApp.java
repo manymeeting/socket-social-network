@@ -106,6 +106,13 @@ public class ServerApp {
         return onlineUsersMap.values().stream().map(OnlineUser::getUserName).collect(Collectors.toList());
     }
 
+    public List<String> getMessagesOnUser(String userId) {
+        return MESSAGE_DAO.getMessageOnUser(userId).stream().map(message -> {
+            return String.format("%s post to %s: %s", message.getFromUesrId(),
+                    message.getToUserId(), message.getContent());
+        }).collect(Collectors.toList());
+    }
+
     public void removeOnlineUser(String token) {
         if (onlineUsersMap.containsKey(token)) {
             onlineUsersMap.get(token).goOffLine();
