@@ -168,16 +168,20 @@ public class TotpClient extends TotpProtocol {
      * Send a heart-beat to the server.
      * @throws IOException
      */
-    public void heartBeat() throws IOException {
+    public void heartBeat() {
         TotpContent totpContent;
         String req, resp;
         clearError();
-        req = contructReq(TotpCmd.HRBT);
-        write(req);
-        resp = read();
-        totpContent = parseResp(TotpCmd.HRBT, resp);
-        if (totpContent.status != TotpStatus.SUCCESS) {
-            setError(totpContent.status.getReasonPhrase());
+        try {
+            req = contructReq(TotpCmd.HRBT);
+            write(req);
+            resp = read();
+            totpContent = parseResp(TotpCmd.HRBT, resp);
+            if (totpContent.status != TotpStatus.SUCCESS) {
+                setError(totpContent.status.getReasonPhrase());
+            }
+        } catch (IOException e) {
+            setError(e.getMessage());
         }
     }
 
@@ -186,20 +190,24 @@ public class TotpClient extends TotpProtocol {
      * @return The closed user sent from the server
      * @throws IOException
      */
-    // TODO Please handle IOException and setError
-    public String goodbye() throws IOException {
+    public String goodbye() {
         TotpContent totpContent;
         String req, resp;
         clearError();
-        req = contructReq(TotpCmd.GBYE);
-        write(req);
-        resp = read();
-        totpContent = parseResp(TotpCmd.GBYE, resp);
-        if (totpContent.status != TotpStatus.SUCCESS) {
-            setError(totpContent.status.getReasonPhrase());
+        try {
+            req = contructReq(TotpCmd.GBYE);
+            write(req);
+            resp = read();
+            totpContent = parseResp(TotpCmd.GBYE, resp);
+            if (totpContent.status != TotpStatus.SUCCESS) {
+                setError(totpContent.status.getReasonPhrase());
+            }
+            super.close(); // Close IO streams
+            return (String) totpContent.content;
+        } catch (IOException e) {
+            setError(e.getMessage());
+            return "";
         }
-        super.close(); // Close IO streams
-        return (String) totpContent.content;
     }
 
     /**

@@ -139,9 +139,6 @@ public class ClientApp {
                     continue;
                 }
             }
-        } catch (EOFException e) {
-            // Server closed
-            logger.log(Level.INFO, String.format("Server closed."));
         } catch (Exception e) {
             logger.log(Level.ERROR, String.format("Internal error. See stack trace for more information."));
             e.printStackTrace();
