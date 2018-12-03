@@ -3,6 +3,7 @@
 target/
 *.log
 logs/
+src/main/resources/db.properties
 
 # IntelliJ
 out/
