@@ -5,19 +5,21 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.connection.Connection;
 import com.socket.server.entity.Message;
 import org.bson.Document;
 
+import java.io.FileInputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 
 /**
  * MongoDB admin info:
- * username: admin
- * password: pwd123
+ * exteranl db.properties file
  * ----------------------
  * MongoDB "user" Collection:
  * username: "user1"
@@ -36,14 +38,30 @@ public class MongoDBManager {
 
     //connecting DB
     public MongoDBManager() {
+
+        //read from local properties file.
+        Properties props = new Properties();
         try {
-            this.dbClient = new MongoClient(new MongoClientURI("mongodb://admin:pwd123@ds243963.mlab.com:43963/cmpe207"));
+            FileInputStream in = new FileInputStream("src/main/resources/db.properties");
+            props.load(in);
+            in.close();
+        } catch (Exception e) {
+            System.out.println("Failed to extract local config file.");
+        }
+
+        String url = props.getProperty("jdbc.url");
+        String username = props.getProperty("jdbc.username");
+        String password = props.getProperty("jdbc.password");
+
+        try {
+            this.dbClient = new MongoClient(new MongoClientURI("mongodb://" + username + ":" + password + url)); //@ds243963.mlab.com:43963/cmpe207"));
         } catch (Exception e) {
             System.out.println("Failed to connect to mongo client.");
         }
 
         this.db = dbClient.getDatabase("cmpe207");
     }
+
 
     /**
      * Using "user" collection to store login info
