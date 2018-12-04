@@ -31,6 +31,9 @@ public class NotificationThread extends Thread {
                     for (OnlineUser onlineUser : server.onlineUsersMap.values()) {
                         try {
                             sendNotification(message.getMessage(), onlineUser);
+                            // User last active timestamp is updated every time a notification is sent
+                            // to ensure users won't read duplicate notification after a server crash
+                            server.updateLastActiveTime(onlineUser.getUserName());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -41,6 +44,7 @@ public class NotificationThread extends Thread {
                     try {
                         OnlineUser onlineUser = server.onlineUsersMap.get(message.getToken());
                         sendNotification(message.getMessage(), onlineUser);
+                        server.updateLastActiveTime(onlineUser.getUserName());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -63,4 +67,5 @@ public class NotificationThread extends Thread {
             logger.error(notiTotp.getErrorMsg());
         }
     }
+
 }

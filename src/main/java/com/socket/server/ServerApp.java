@@ -123,11 +123,13 @@ public class ServerApp {
 
     public void removeOnlineUser(String token) {
         if (onlineUsersMap.containsKey(token)) {
-            onlineUsersMap.get(token).goOffLine();
+            OnlineUser user = onlineUsersMap.get(token);
+            user.goOffLine();
             onlineUsersMap.remove(token);
 
             // Broadcast notification
-            String message = String.format("User %s has been offline.", token);
+            String userName = user.getUserName();
+            String message = String.format("User %s has been offline.", userName);
             addNotification(new NotificationMessage(NotificationMessage.EMPTY_TOKEN, message));
         }
     }

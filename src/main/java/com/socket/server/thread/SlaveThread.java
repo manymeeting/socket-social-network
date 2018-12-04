@@ -140,8 +140,9 @@ public class SlaveThread extends Thread {
                             req.get(TotpReqHeaderField.MESSAGE)
                     );
                     receiveMessage(newMessage);
-                    sendNotification(NotificationMessage.EMPTY_TOKEN, String.format("%s posted: %s",
-                            user.getUsername(), req.get(TotpReqHeaderField.MESSAGE)));
+                    sendNotification(NotificationMessage.EMPTY_TOKEN, String.format("%s post to %s: %s",
+                            user.getUsername(), receivingMsgToUserId,
+                            req.get(TotpReqHeaderField.MESSAGE)));
                     serverTotp.respond(TotpCmd.DATA, TotpStatus.TRANSFER_ACTION_COMPLETED);
                     continue;
                 }
@@ -208,7 +209,6 @@ public class SlaveThread extends Thread {
             server.removeOnlineUser(user.getToken());
             // Update last active timestamp
             server.updateLastActiveTime(user.getUsername());
-            user.setLastActiveTimestamp(new Date());
         }
     }
 
