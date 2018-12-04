@@ -26,7 +26,6 @@ public class ServerApp {
     private ServerSocket serverNotiSocket = null;
     private static final int DEFAULT_PORT = 9091;
     private static final int NOTIFICATION_PORT = 9092;
-    public volatile Set<SlaveThread> slaveThreadSet;
     public volatile Map<String, OnlineUser> onlineUsersMap;
     public volatile Queue<NotificationMessage> messagesToSendQueue;
     public static final UserDao USER_DAO = new UserDao();
@@ -42,7 +41,6 @@ public class ServerApp {
             serverSocket = new ServerSocket(DEFAULT_PORT);
             logger.log(Level.INFO, "Server started, listening on " + DEFAULT_PORT);
             serverNotiSocket = new ServerSocket(NOTIFICATION_PORT);
-            slaveThreadSet = new HashSet<>();
             onlineUsersMap = new HashMap<>();
             messagesToSendQueue = new ConcurrentLinkedQueue<>();
         } catch (IOException e) {
@@ -61,7 +59,6 @@ public class ServerApp {
 
                 SlaveThread slaveThread = new SlaveThread(this, clientSocket, clientNotiSocket);
                 slaveThread.start();
-                slaveThreadSet.add(slaveThread);
 
             } catch (IOException e) {
                 e.printStackTrace();
