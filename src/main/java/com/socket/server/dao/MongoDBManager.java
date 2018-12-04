@@ -5,12 +5,10 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.connection.Connection;
 import com.socket.server.entity.Message;
 import org.bson.Document;
 
 import java.io.FileInputStream;
-import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -154,7 +152,6 @@ public class MongoDBManager {
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("timeStamp", new BasicDBObject("$gte", timeStamp));
         List<Document> docs = (List<Document>) msgGroup.find(whereQuery).into(new ArrayList<>());
-        System.out.println(docs.size());
         List<String> result = new ArrayList<>();
         for (Document doc : docs) {
             result.add((String) doc.get("from") + " post to " + (String) doc.get("to") + " : " + (String) doc.get("message"));
